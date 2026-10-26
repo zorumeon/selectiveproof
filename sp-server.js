@@ -47,8 +47,9 @@ const ADMIN_TOKEN = process.env.ADMIN_TOKEN || '';
 const SESSION_MS = 12 * 60 * 60 * 1000;
 
 let publicUrl = null;
-if (process.env.PUBLIC_ORIGIN) {
-  try { publicUrl = new URL(process.env.PUBLIC_ORIGIN.trim()); } catch { publicUrl = null; }
+const PUBLIC_ORIGIN = process.env.PUBLIC_ORIGIN || process.env.RENDER_EXTERNAL_URL || '';
+if (PUBLIC_ORIGIN) {
+  try { publicUrl = new URL(PUBLIC_ORIGIN.trim()); } catch { publicUrl = null; }
   if (!publicUrl || !/^https?:$/.test(publicUrl.protocol)) {
     console.error('PUBLIC_ORIGIN must look like https://demo.example.com');
     process.exit(1);
