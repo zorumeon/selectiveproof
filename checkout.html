@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Merchant dashboard | SelectiveProof</title>
+<style>
+:root{--bg:#e7e4da;--fg:#17150f;--mut:#6a665a;--card:#f8f6f0;--line:#cfcbbd;--bd:#8f8a78;--inp:#fffdf7;--ok:#166534;--warn:#92400e;--bad:#b91c1c;--paper:#f6f1e4;--ink:#14120d}
+@media(prefers-color-scheme:dark){:root{--bg:#000;--fg:#f4f1e8;--mut:#9a968a;--card:#0d0d0b;--line:#2a2924;--bd:#4a483f;--inp:#1a1a17;--ok:#4ade80;--warn:#fbbf24;--bad:#f87171}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font:15px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif}
+.wrap{max-width:760px;margin:0 auto;padding:24px 16px 64px}
+h1{font-size:22px;margin:0}h2{font-size:15px;margin:0 0 10px}
+.top{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px}
+.top a{color:var(--mut);font-size:13px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:20px;margin-top:16px}
+.tabs{display:flex;gap:8px}
+.tab{flex:1;padding:10px;border-radius:10px;border:1px solid var(--bd);background:transparent;color:var(--fg);font:600 14px inherit;cursor:pointer}
+.tab[aria-pressed=true]{background:var(--paper);color:var(--ink)}
+label{display:block;font-size:12px;color:var(--mut);margin:12px 0 4px}
+input{width:100%;background:var(--inp);color:var(--fg);border:1px solid var(--bd);border-radius:10px;padding:10px 12px;font:13px ui-monospace,Consolas,monospace}
+.row{display:flex;gap:10px}.row>*{flex:1;min-width:0}
+button.b{border:0;border-radius:10px;padding:11px 18px;background:var(--paper);color:var(--ink);box-shadow:inset 0 0 0 1px #14120d;font:600 14px inherit;cursor:pointer;margin-top:14px}
+button.g{background:transparent;color:var(--fg);box-shadow:none;border:1px solid var(--bd);font-weight:500;padding:8px 14px;margin-top:0}
+button:disabled{opacity:.5;cursor:default}
+.hidden{display:none!important}
+.note{font-size:12px;color:var(--mut);margin:8px 0 0}
+.msg{font-size:13px;min-height:1.2em;margin-top:10px;word-break:break-word}
+.msg.ok{color:var(--ok)}.msg.bad{color:var(--bad)}.msg.warn{color:var(--warn)}
+.real{border:1px solid var(--warn);color:var(--warn);border-radius:10px;padding:10px 12px;font-size:13px;margin-top:12px}
+.inv{border-top:1px solid var(--line);padding:12px 0;display:flex;gap:10px;align-items:center;justify-content:space-between}
+.inv:first-child{border-top:0}.inv .m{min-width:0}.inv .t{font-weight:600}.inv .s{font-size:12px;color:var(--mut);word-break:break-all}
+.pill{display:inline-block;font-size:11px;border:1px solid var(--bd);border-radius:999px;padding:1px 8px;margin-right:6px;color:var(--mut)}
+.pill.mainnet{border-color:var(--warn);color:var(--warn)}.pill.paid{border-color:var(--ok);color:var(--ok)}
+.acts{display:flex;gap:6px;flex-shrink:0}.acts a{color:var(--fg);font-size:13px}
+
+/* SelectiveProof shared UI refresh */
+:root{color-scheme:light;--bg:#f4f7fb;--fg:#152746;--mut:#64748b;--card:#fff;--line:#dce5f1;--bd:#b8c8dc;--inp:#fff;--ok:#087f5b;--warn:#9a6700;--bad:#b42318;--paper:#edf4ff;--ink:#152746}
+@media(prefers-color-scheme:dark){:root{color-scheme:dark;--bg:#0b1220;--fg:#edf4ff;--mut:#9aabc4;--card:#111c2e;--line:#293a52;--bd:#435774;--inp:#0f1a2b;--ok:#5ee0b1;--warn:#ffd166;--bad:#ff8585;--paper:#1b3150;--ink:#edf4ff}}
+body{background:var(--bg);font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;color:var(--fg)}.wrap{max-width:900px;padding:28px 18px 64px}.top{padding:12px 0 20px;border-bottom:1px solid var(--line);margin-bottom:24px}.top h1{font-size:26px;font-weight:750;letter-spacing:-.035em}.top a{color:#1769e8}.card{border-color:var(--line);border-radius:16px;padding:24px;box-shadow:0 5px 18px rgba(25,55,90,.04)}h2{font-size:17px;font-weight:700;margin-bottom:14px}.tab{border-color:var(--line);border-radius:10px;padding:12px}.tab[aria-pressed=true]{background:#1769e8;color:#fff;border-color:#1769e8}input{border-color:var(--bd);border-radius:9px;min-height:44px;font-family:ui-monospace,Consolas,monospace}input:focus-visible,button:focus-visible,a:focus-visible{outline:3px solid #8db8ff;outline-offset:2px}button.b{background:#1769e8;color:#fff;box-shadow:none;border-radius:10px;padding:12px 18px}button.g{background:var(--card);color:var(--fg);border:1px solid var(--line)}button.b:hover{background:#0d57c8}.note,.msg{line-height:1.55}.real{border-radius:10px;background:#fff8e6;border-color:#e9bd52;color:#805800}.inv{padding:16px 0;border-color:var(--line)}.pill{border-color:var(--line);padding:3px 9px}.pill.testnet{background:#edf4ff;color:#1458c8;border-color:#cfe0ff}.pill.paid{background:#e7f8f0}.acts a{color:#1769e8}.hidden{display:none!important}@media(max-width:600px){.wrap{padding:16px 12px 40px}.card{padding:18px}.top h1{font-size:22px}.row{flex-direction:column;gap:0}.inv{align-items:flex-start;flex-direction:column}.acts{width:100%;flex-wrap:wrap}}
+
+</style>
+<style>
+/* SelectiveProof v4.0 — usability-first redesign */
+:root{color-scheme:light;--bg:#f4f7fb;--fg:#14243d;--mut:#61718a;--card:#fff;--line:#dce6f3;--bd:#b9cbe2;--inp:#fbfdff;--ok:#087f5b;--warn:#9a6700;--bad:#b42318;--paper:#1769e8;--ink:#fff;--glow:rgba(23,105,232,.13)}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){color-scheme:dark;--bg:#0b1424;--fg:#e9f1ff;--mut:#a0b2cc;--card:#121f33;--line:#263955;--bd:#3c5271;--inp:#0e1a2c;--ok:#52d6a2;--warn:#ffd166;--bad:#ff8c8c;--paper:#2878f0;--ink:#fff;--glow:rgba(40,120,240,.2)}}
+body{background:var(--bg)!important;color:var(--fg)!important;font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif!important;line-height:1.55!important}h1{letter-spacing:-.035em!important;font-weight:750!important}h2,h3{font-weight:700!important;letter-spacing:-.015em}a{color:#1769e8}button,.btn,button.b{border-radius:11px!important;transition:transform .12s ease,box-shadow .12s ease,background .12s ease!important}button:focus-visible,a:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-visible{outline:3px solid #80b4ff!important;outline-offset:2px!important}input,textarea,select{border:1px solid var(--bd)!important;border-radius:10px!important;background:var(--inp)!important;color:var(--fg)!important;min-height:42px}label{font-weight:650!important;color:var(--fg)!important;font-size:13px!important}.card,.paper,.panel,.box{background:var(--card)!important;border:1px solid var(--line)!important;border-radius:16px!important;box-shadow:0 8px 28px rgba(20,50,90,.045)!important}.wrap{max-width:960px!important}.btn,button.b{background:#1769e8!important;color:#fff!important;border:1px solid #1769e8!important;box-shadow:none!important;font-weight:700!important}.btn.ghost,button.g{background:transparent!important;color:var(--fg)!important;border:1px solid var(--bd)!important}.sub,.muted,.hint{color:var(--mut)!important}.badge,.tag{border-radius:999px!important;padding:4px 10px!important;font-weight:700!important}.row{gap:12px}.hidden{display:none!important}table{width:100%;border-collapse:separate;border-spacing:0}th{background:color-mix(in srgb,var(--bg) 80%,var(--card));font-size:12px;text-transform:none;letter-spacing:0;color:var(--mut)}td,th{padding:11px 12px;border-bottom:1px solid var(--line)}tr:last-child td{border-bottom:0}.netb{border-radius:999px!important}::selection{background:#cfe2ff;color:#14243d}
+@media(max-width:640px){.wrap{padding:12px!important}.card{padding:18px!important}.row{flex-wrap:wrap}.row>*{min-width:100%}h1{font-size:clamp(22px,6vw,32px)!important}button,.btn{min-height:44px}.cols{grid-template-columns:1fr!important}.acts{display:flex;flex-wrap:wrap;gap:8px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top"><h1>Merchant dashboard</h1><a href="/">Back to SelectiveProof</a></div>
+
+  <div class="tabs" role="group" aria-label="Network">
+    <button class="tab" id="tabTest" type="button" aria-pressed="true">Testnet (TAZ)</button>
+    <button class="tab" id="tabMain" type="button" aria-pressed="false">Mainnet (ZEC)</button>
+  </div>
+  <div id="realBox" class="real hidden">Mainnet uses real ZEC. Your viewing key stays in this server's memory and is never saved or logged. Use this only on your own computer.</div>
+
+  <div class="card">
+    <h2>1. Connect your wallet scanner</h2>
+    <div id="sessOn" class="hidden">
+      <p class="msg ok" id="sessInfo"></p>
+      <button class="b g" id="sessEnd" type="button">End session</button>
+    </div>
+    <div id="sessOff">
+      <label for="ufvk">Unified full viewing key (<span id="ufvkHint"></span>)</label>
+      <input id="ufvk" type="password" autocomplete="off" spellcheck="false" />
+      <div class="row">
+        <div><label for="bday">Birthday block height</label><input id="bday" inputmode="numeric" /></div>
+        <div style="flex:2"><label for="addr">Receiving address (<span id="addrHint"></span>)</label><input id="addr" autocomplete="off" spellcheck="false" /></div>
+      </div>
+      <button class="b" id="sessGo" type="button">Start session</button>
+      <p class="note">The key is sent to this server only, kept in memory, and forgotten when the server stops.</p>
+    </div>
+    <p class="msg" id="sessMsg" role="status"></p>
+  </div>
+
+  <div class="card">
+    <h2>2. Create an invoice</h2>
+    <div class="row">
+      <div><label for="amt">Amount (<span id="unit">TAZ</span>)</label><input id="amt" inputmode="decimal" /></div>
+      <div style="flex:2"><label for="desc">Description (optional)</label><input id="desc" maxlength="80" /></div>
+    </div>
+    <button class="b" id="mk" type="button">Create invoice</button>
+    <p class="msg" id="mkMsg" role="status"></p>
+  </div>
+
+  <div class="card">
+    <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap">
+      <h2 style="margin:0">3. Your invoices</h2>
+      <div class="acts"><button class="b g" id="chk" type="button">Check for payments</button><button class="b g" id="full" type="button">Rescan all invoices</button></div>
+    </div>
+    <p class="msg" id="chkMsg" role="status"></p>
+    <div id="list"></div>
+  </div>
+</div>
+
+<script>
+(function () {
+  var $ = function (id) { return document.getElementById(id); };
+  var NET = 'testnet', sessions = {}, invoices = [], mainOk = true;
+  var CFG = {
+    testnet: { unit: 'TAZ', ufvk: 'starts with uviewtest1', addr: 'starts with utest1' },
+    mainnet: { unit: 'ZEC', ufvk: 'starts with uview1', addr: 'starts with u1' }
+  };
+
+  function api(path, method, body) {
+    return fetch(path, { method: method, headers: { 'content-type': 'application/json' }, body: body ? JSON.stringify(body) : undefined })
+      .then(function (r) { return r.json().then(function (j) { return { ok: r.ok, j: j }; }); })
+      .then(function (res) {
+        if (!res.ok) { var e = new Error(res.j && res.j.error || 'Request failed.'); e.detail = res.j && res.j.detail; throw e; }
+        return res.j;
+      });
+  }
+  function say(id, text, cls) { var e = $(id); e.textContent = text; e.className = 'msg' + (cls ? ' ' + cls : ''); }
+  function el(tag, cls, text) { var e = document.createElement(tag); if (cls) e.className = cls; if (text !== undefined) e.textContent = text; return e; }
+
+  function setNet(n) {
+    NET = n;
+    $('tabTest').setAttribute('aria-pressed', n === 'testnet');
+    $('tabMain').setAttribute('aria-pressed', n === 'mainnet');
+    $('realBox').classList.toggle('hidden', n !== 'mainnet');
+    $('unit').textContent = CFG[n].unit;
+    $('ufvkHint').textContent = CFG[n].ufvk;
+    $('addrHint').textContent = CFG[n].addr;
+    say('sessMsg', ''); say('mkMsg', '');
+    renderSession();
+  }
+
+  function renderSession() {
+    var s = sessions[NET];
+    var on = Boolean(s && s.active);
+    $('sessOn').classList.toggle('hidden', !on);
+    $('sessOff').classList.toggle('hidden', on);
+    $('mk').disabled = !on;
+    if (on) $('sessInfo').textContent = 'Session active. Receiving address ' + s.address.slice(0, 14) + '... from block ' + s.birthday + '.';
+  }
+
+  function fmtStatus(i) {
+    if (i.status === 'paid') return 'paid' + (i.paidHeight ? ' (block ' + i.paidHeight + ')' : '');
+    if (i.status === 'confirming') return 'payment seen, confirming (' + (i.confirmations || 0) + '/' + (i.requiredConfirmations || 3) + ')';
+    if (i.status === 'partial') return 'partly paid, ' + i.received + ' of ' + i.amount;
+    return 'Waiting for payment';
+  }
+
+  function renderList() {
+    var box = $('list'); box.textContent = '';
+    if (!invoices.length) { box.appendChild(el('p', 'note', 'No invoices yet. Create one to get started.')); return; }
+    invoices.forEach(function (i) {
+      var row = el('div', 'inv'), m = el('div', 'm');
+      var t = el('div', 't');
+      t.appendChild(el('span', 'pill ' + i.net, i.net === 'mainnet' ? 'MAINNET' : 'TESTNET'));
+      t.appendChild(el('span', 'pill ' + (i.status === 'paid' ? 'paid' : ''), i.status));
+      t.appendChild(document.createTextNode(i.amount + ' ' + i.unit + (i.description ? ' - ' + i.description : '')));
+      m.appendChild(t);
+      m.appendChild(el('div', 's', 'Memo code ' + i.code + ' | ' + fmtStatus(i)));
+      var acts = el('div', 'acts');
+      var a = el('a', '', 'Open'); a.href = '/pay?i=' + encodeURIComponent(i.id); a.target = '_blank'; a.rel = 'noopener';
+      var c = el('button', 'b g', 'Copy link'); c.type = 'button';
+      c.addEventListener('click', function () {
+        var url = location.origin + '/pay?i=' + encodeURIComponent(i.id);
+        (navigator.clipboard ? navigator.clipboard.writeText(url) : Promise.reject()).then(function () { c.textContent = 'Copied'; }, function () { window.prompt('Copy this link', url); });
+      });
+      acts.appendChild(a); acts.appendChild(c);
+      row.appendChild(m); row.appendChild(acts); box.appendChild(row);
+    });
+  }
+
+  function showCheck(lc) {
+    if (!lc) return;
+    if (lc.skipped) {
+      var why = { 'no-scanner': 'The scanner is not installed (npm install @ledgerhq/zcash-utils).', 'no-session': 'Start a merchant session first.', 'nothing-pending': 'No invoice needs chain checking.', busy: 'A scan is already running.' };
+      return say('chkMsg', why[lc.skipped] || lc.skipped, 'warn');
+    }
+    var parts = [], bad = false;
+    Object.keys(lc.results || {}).forEach(function (n) {
+      var r = lc.results[n];
+      if (r.error) { bad = true; parts.push(n + ': ' + r.error + (r.detail ? ' Cause: ' + r.detail : '')); }
+      else parts.push(n + ': scanned from block ' + r.from + ', ' + r.rows + ' notes, ' + Math.round(r.ms / 1000) + 's');
+    });
+    say('chkMsg', parts.join('  |  '), bad ? 'bad' : 'ok');
+  }
+
+  function load() {
+    return api('/api/invoices', 'GET').then(function (j) {
+      invoices = j.invoices || []; sessions = j.sessions || {};
+      renderList(); renderSession();
+      if (!$('chkMsg').textContent) showCheck(j.lastCheck);
+    }).catch(function (e) { say('chkMsg', e.message, 'bad'); });
+  }
+
+  $('tabTest').addEventListener('click', function () { setNet('testnet'); });
+  $('tabMain').addEventListener('click', function () { setNet('mainnet'); });
+
+  $('sessGo').addEventListener('click', function () {
+    var b = $('sessGo'); b.disabled = true; say('sessMsg', 'Starting...');
+    api('/api/merchant/session', 'POST', { net: NET, ufvk: $('ufvk').value.trim(), birthday: Number($('bday').value), address: $('addr').value.trim() })
+      .then(function (j) { sessions = j.sessions; $('ufvk').value = ''; say('sessMsg', 'Session started.', 'ok'); renderSession(); })
+      .catch(function (e) { say('sessMsg', e.message, 'bad'); })
+      .then(function () { b.disabled = false; });
+  });
+  $('sessEnd').addEventListener('click', function () {
+    api('/api/merchant/session', 'POST', { net: NET, logout: true }).then(function (j) { sessions = j.sessions; say('sessMsg', 'Session ended. The key was forgotten.', 'ok'); renderSession(); })
+      .catch(function (e) { say('sessMsg', e.message, 'bad'); });
+  });
+  $('mk').addEventListener('click', function () {
+    var b = $('mk'); b.disabled = true; say('mkMsg', 'Creating...');
+    api('/api/invoices', 'POST', { net: NET, amount: Number($('amt').value), description: $('desc').value })
+      .then(function (inv) { say('mkMsg', 'Created. Memo code ' + inv.code + '. Send the buyer the link from the list below.', 'ok'); $('amt').value = ''; $('desc').value = ''; return load(); })
+      .catch(function (e) { say('mkMsg', e.message, 'bad'); })
+      .then(function () { renderSession(); });
+  });
+  function check(full) {
+    say('chkMsg', full ? 'Rescanning from the birthday block. This can take a while...' : 'Checking...');
+    api('/api/invoices/check', 'POST', { full: full })
+      .then(function (j) { invoices = j.invoices || invoices; renderList(); showCheck(j.result); })
+      .catch(function (e) { say('chkMsg', e.message, 'bad'); });
+  }
+  $('chk').addEventListener('click', function () { check(false); });
+  $('full').addEventListener('click', function () { check(true); });
+
+  fetch('/api/health').then(function (r) { return r.json(); }).then(function (h) {
+    mainOk = h.mainnet !== false;
+    if (!mainOk) $('tabMain').classList.add('hidden');
+  }).catch(function () {}).then(function () { setNet('testnet'); load(); setInterval(load, 10000); });
+})();
+</script>
+</body>
+</html>

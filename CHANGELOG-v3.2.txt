@@ -1,0 +1,39 @@
+SelectiveProof v3.2 - safety fixes for testnet QA
+================================================
+
+Changes in this package:
+- Local mode refuses to bind to a non-loopback HOST without PUBLIC_ORIGIN + ADMIN_TOKEN.
+- Invoice memo matching requires the complete ZP-XXXXXX code token, not a substring of a longer word.
+- Scanner rejects malformed block heights and invalid/non-positive note amounts.
+- Invoice totals are recomputed from the current scan result instead of retaining a stale larger total.
+- If one invoice is paid through multiple txids, the app no longer displays one txid as if it represented all payments.
+- Explorer height confirmation is only reported when a structured JSON height field matches; a text substring is not enough.
+- Explorer response bodies are limited to 2 MB.
+- Invoice memo codes are checked for collisions.
+- Server refuses to start if the receipt signing key cannot be persisted, instead of issuing receipts that will fail after restart.
+
+Validation performed here:
+- Node.js syntax check for sp-server.js and sp-scanner.js passed.
+- No live lightwalletd scan, wallet connection, testnet payment, explorer request, or receipt round-trip was run.
+- Run npm install and perform the testnet checklist before treating payments as verified.
+
+Important limitations still requiring runtime validation:
+- Confirm the exact response schema of @ledgerhq/zcash-utils 2.8.0 in your environment.
+- Invoice paid status is based on memo-matched incoming notes from the configured viewing-key scan; this package does not independently prove the merchant receiving address for each note.
+- Confirmation-depth and reorg policy still need to be chosen and tested before production/mainnet use.
+- A signed receipt proves the merchant issued it and that its saved invoice record agrees; it is not a standalone Zcash consensus proof.
+
+
+UI refresh (North American English)
+- Updated the main, merchant, payment, and receipt pages to a consistent responsive blue/navy visual system.
+- Improved labels and helper text for scanning, selecting proof fields, invoices, and receipt checks.
+- Updated the sample landing receipt label so sample data is not presented as verified.
+- UI styling and copy changes do not by themselves confirm wallet, scanner, or on-chain verification works.
+
+Post-v3.2 hardening:
+- Added confirmation-aware PENDING/PARTIAL/CONFIRMING/PAID state machine.
+- Added fail-closed behavior when chain tip is unavailable.
+- Added paid-invoice rescanning/fallback behavior.
+- Extracted payment evaluation into sp-payment.js.
+- Added automated adversarial regression tests (`npm test`).
+- Added SECURITY-PRIVACY-AUDIT.md and ZECATHON-DEMO-RUNBOOK.md.

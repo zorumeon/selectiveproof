@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Payment details</title>
+<style>
+:root{--bg:#e7e4da;--fg:#17150f;--mut:#6a665a;--card:#f8f6f0;--line:#cfcbbd;--bd:#8f8a78;--inp:#fffdf7;--ok:#166534;--warn:#92400e;--bad:#b91c1c;--paper:#f6f1e4;--ink:#14120d;--glow:rgba(20,18,13,.25)}
+@media(prefers-color-scheme:dark){:root{--bg:#000;--fg:#f4f1e8;--mut:#9a968a;--card:#0d0d0b;--line:#2a2924;--bd:#4a483f;--inp:#1a1a17;--ok:#4ade80;--warn:#fbbf24;--bad:#f87171;--glow:rgba(246,241,228,.32)}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font:15px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+.mono{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
+.hidden{display:none!important}
+.wrap{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:16px}
+.col{width:100%;max-width:448px;padding:24px 0}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:28px}
+.ctr{text-align:center}
+.badge{width:56px;height:56px;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 12px;font-size:24px;background:#f59e0b22;color:var(--warn)}
+.badge.ok{background:#16653422;color:var(--ok)}.badge.bad{background:#b91c1c22;color:var(--bad)}
+h1{margin:0;font-size:24px}
+.sub{margin:4px 0 0;font-size:14px;color:var(--mut)}
+.sum{margin-top:20px;background:var(--inp);border:1px solid var(--line);border-radius:12px;padding:16px;font-size:14px}
+.sum .r{display:flex;justify-content:space-between;gap:12px}.sum .r+.r{margin-top:12px}
+.sum .v{text-align:right;word-break:break-word;max-width:65%}.k{color:var(--mut)}
+.amt{color:var(--ok);font-weight:600}
+.lbl{font-size:12px;color:var(--mut);margin:16px 0 6px}
+.line{display:flex;gap:8px}
+.in{flex:1;min-width:0;background:var(--inp);color:var(--fg);border:1px solid var(--bd);border-radius:10px;padding:11px 13px;font-size:13px;outline:none}
+textarea.in{width:100%;resize:vertical}
+.hint{font-size:12px;color:var(--mut);margin:8px 0 0;line-height:1.5}
+.btn{display:inline-block;border:0;border-radius:10px;padding:12px 22px;background:var(--paper);color:var(--ink);box-shadow:inset 0 0 0 1px #14120d,0 6px 14px -8px var(--glow);font:600 15px inherit;cursor:pointer;text-decoration:none;text-align:center}
+.btn.full{width:100%}.btn:disabled{opacity:.45;cursor:not-allowed}
+.btn.ghost{background:transparent;color:var(--fg);box-shadow:none;border:1px solid var(--bd);padding:10px 16px;font-size:13px;font-weight:500}
+.btn:focus-visible,.in:focus-visible,a:focus-visible{outline:3px solid var(--fg);outline-offset:2px}
+.msg{margin:14px 0 0;min-height:1.25rem;font-size:13px;text-align:center;color:var(--mut);line-height:1.5}
+.msg.ok{color:var(--ok)}.msg.bad{color:var(--bad)}.msg.warn{color:var(--warn)}
+.txid{margin:8px 0 0;font-size:11px;color:var(--mut);text-align:center;word-break:break-all}
+.box{margin-top:20px;background:var(--inp);border:1px solid var(--line);border-radius:12px;padding:16px;font-size:14px}
+.cap{font-size:10px;letter-spacing:.15em;color:var(--mut);margin:0 0 4px}
+.chk{display:flex;align-items:center;gap:8px;margin:0 0 8px}.chk input{width:auto;margin:0}
+.acts{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;margin-top:20px}
+details{margin-top:20px;font-size:12px;color:var(--mut)}summary{cursor:pointer;color:var(--fg)}
+details ul{padding-left:18px;margin:8px 0 0}details li{margin-bottom:4px}
+.rc-paper{position:relative;background:var(--paper);color:var(--ink);font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:13px;line-height:1.45;max-width:390px;margin:26px auto}
+.rc-paper::before,.rc-paper::after{content:"";position:absolute;left:0;right:0;height:10px;background:var(--paper)}
+.rc-paper::before{bottom:100%;-webkit-mask:conic-gradient(from 135deg at top,#0000,#000 1deg 89deg,#0000 90deg) 50%/20px 100%;mask:conic-gradient(from 135deg at top,#0000,#000 1deg 89deg,#0000 90deg) 50%/20px 100%}
+.rc-paper::after{top:100%;-webkit-mask:conic-gradient(from -45deg at bottom,#0000,#000 1deg 89deg,#0000 90deg) 50%/20px 100%;mask:conic-gradient(from -45deg at bottom,#0000,#000 1deg 89deg,#0000 90deg) 50%/20px 100%}
+.rc-edge{display:none}.rc-body{padding:22px 20px}
+.rc-brand{text-align:center;letter-spacing:.2em;font-weight:700;font-size:15px}
+.rc-sub{text-align:center;color:#6b6350;font-size:11px;letter-spacing:.08em}
+.rc-rule{border-top:1px dashed #b3aa8e;margin:10px 0}
+.rc-label{font-size:11px;font-weight:700;letter-spacing:.06em;color:#6b6350}.rc-center{text-align:center}
+.rc-total{text-align:center;font-size:26px;font-weight:700}
+.rc-stamp{width:max-content;margin:6px auto 0;border:3px solid #166534;color:#166534;padding:1px 10px;font-weight:800;letter-spacing:.1em;transform:rotate(-8deg)}
+.rc-row{display:flex;justify-content:space-between;gap:12px;padding:3px 0;align-items:baseline}
+.rc-k{color:#6b6350;font-size:12px}.rc-v{text-align:right;word-break:break-all;max-width:64%}
+.rc-stack{padding:3px 0}.rc-tx{display:block;word-break:break-all;font-size:11px}
+.rc-redact{background:var(--ink);color:var(--ink);border-radius:2px;user-select:none}
+.rc-barcode{display:block;margin:8px 0}.rc-mini{font-size:10px;color:#6b6350;word-break:break-all}
+.rc-note{text-align:center;font-size:11px;color:#6b6350;margin-top:10px}
+.rc-thanks{text-align:center;letter-spacing:.15em;font-size:12px;margin-top:10px}
+@media print{body{background:#fff}.no-print{display:none!important}}
+
+/* SelectiveProof shared UI refresh */
+:root{color-scheme:light;--bg:#f4f7fb;--fg:#152746;--mut:#64748b;--card:#fff;--line:#dce5f1;--bd:#b8c8dc;--inp:#fff;--ok:#087f5b;--warn:#9a6700;--bad:#b42318;--paper:#edf4ff;--ink:#152746}
+@media(prefers-color-scheme:dark){:root{color-scheme:dark;--bg:#0b1220;--fg:#edf4ff;--mut:#9aabc4;--card:#111c2e;--line:#293a52;--bd:#435774;--inp:#0f1a2b;--ok:#5ee0b1;--warn:#ffd166;--bad:#ff8585;--paper:#1b3150;--ink:#edf4ff}}
+body{background:var(--bg)!important;color:var(--fg)!important;font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif!important}main,.wrap,.card,.panel{background:var(--card)!important;border-color:var(--line)!important;border-radius:16px!important}h1,h2,h3{letter-spacing:-.025em}.btn{background:#1769e8!important;color:#fff!important;border:1px solid #1769e8!important;border-radius:10px!important;box-shadow:none!important;font-weight:650!important}.btn.ghost{background:var(--card)!important;color:var(--fg)!important;border-color:var(--line)!important}input{background:var(--inp)!important;color:var(--fg)!important;border-color:var(--bd)!important;border-radius:9px!important;min-height:44px}input:focus-visible,button:focus-visible,a:focus-visible{outline:3px solid #8db8ff;outline-offset:2px}.hint,.sub{color:var(--mut)!important}.sp-net{background:#edf4ff;color:#1458c8;border-radius:999px;padding:5px 9px;font-weight:700}
+
+</style>
+<style>
+/* SelectiveProof v4.0 — usability-first redesign */
+:root{color-scheme:light;--bg:#f4f7fb;--fg:#14243d;--mut:#61718a;--card:#fff;--line:#dce6f3;--bd:#b9cbe2;--inp:#fbfdff;--ok:#087f5b;--warn:#9a6700;--bad:#b42318;--paper:#1769e8;--ink:#fff;--glow:rgba(23,105,232,.13)}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){color-scheme:dark;--bg:#0b1424;--fg:#e9f1ff;--mut:#a0b2cc;--card:#121f33;--line:#263955;--bd:#3c5271;--inp:#0e1a2c;--ok:#52d6a2;--warn:#ffd166;--bad:#ff8c8c;--paper:#2878f0;--ink:#fff;--glow:rgba(40,120,240,.2)}}
+body{background:var(--bg)!important;color:var(--fg)!important;font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif!important;line-height:1.55!important}h1{letter-spacing:-.035em!important;font-weight:750!important}h2,h3{font-weight:700!important;letter-spacing:-.015em}a{color:#1769e8}button,.btn,button.b{border-radius:11px!important;transition:transform .12s ease,box-shadow .12s ease,background .12s ease!important}button:focus-visible,a:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-visible{outline:3px solid #80b4ff!important;outline-offset:2px!important}input,textarea,select{border:1px solid var(--bd)!important;border-radius:10px!important;background:var(--inp)!important;color:var(--fg)!important;min-height:42px}label{font-weight:650!important;color:var(--fg)!important;font-size:13px!important}.card,.paper,.panel,.box{background:var(--card)!important;border:1px solid var(--line)!important;border-radius:16px!important;box-shadow:0 8px 28px rgba(20,50,90,.045)!important}.wrap{max-width:960px!important}.btn,button.b{background:#1769e8!important;color:#fff!important;border:1px solid #1769e8!important;box-shadow:none!important;font-weight:700!important}.btn.ghost,button.g{background:transparent!important;color:var(--fg)!important;border:1px solid var(--bd)!important}.sub,.muted,.hint{color:var(--mut)!important}.badge,.tag{border-radius:999px!important;padding:4px 10px!important;font-weight:700!important}.row{gap:12px}.hidden{display:none!important}table{width:100%;border-collapse:separate;border-spacing:0}th{background:color-mix(in srgb,var(--bg) 80%,var(--card));font-size:12px;text-transform:none;letter-spacing:0;color:var(--mut)}td,th{padding:11px 12px;border-bottom:1px solid var(--line)}tr:last-child td{border-bottom:0}.netb{border-radius:999px!important}::selection{background:#cfe2ff;color:#14243d}
+@media(max-width:640px){.wrap{padding:12px!important}.card{padding:18px!important}.row{flex-wrap:wrap}.row>*{min-width:100%}h1{font-size:clamp(22px,6vw,32px)!important}button,.btn{min-height:44px}.cols{grid-template-columns:1fr!important}.acts{display:flex;flex-wrap:wrap;gap:8px}}
+</style>
+</head>
+<body>
+<div class="wrap"><div class="col">
+  <div id="head" class="ctr">
+    <div id="badge" class="badge"><span id="badgeIcon">&#8230;</span></div>
+    <h1 id="title">Checking your receipt</h1>
+    <p id="sub" class="sub">One payment. Only the details you choose to share.</p>
+  </div>
+  <p id="reason" class="msg bad hidden"></p>
+
+  <div id="paperMount"></div>
+  <p id="okLine" class="msg ok no-print hidden"></p>
+
+  <div id="selfCheck" class="box no-print hidden">
+    <p class="cap">CHECK IT WITHOUT THE SERVER</p>
+    <p class="hint">The signature is Ed25519. Paste the merchant's public key, which you should get from the merchant by another route, and your browser checks the signature itself. No request is sent.</p>
+    <p class="lbl">Merchant public key (Base64URL, SPKI Base64, or PEM)</p>
+    <textarea id="pkIn" rows="3" spellcheck="false" class="in mono"></textarea>
+    <p id="pkNote" class="hint hidden">This key was filled in by the same server that issued the receipt. It shows the receipt is consistent with that server, not that the server is who it claims to be. Compare the fingerprint with one the merchant gave you elsewhere.</p>
+    <div class="acts">
+      <button id="pkCopy" type="button" class="btn ghost hidden">Copy key</button>
+      <button id="pkVerify" type="button" class="btn">Verify in this browser</button>
+    </div>
+    <p id="pkFp" class="hint mono"></p>
+    <p id="pkOut" class="msg" role="status"></p>
+  </div>
+
+  <details class="no-print">
+    <summary>What this proves, and what it does not</summary>
+    <ul>
+      <li><b>Proves:</b> the merchant who issued this receipt signed these exact fields, and its own records confirm the invoice was paid. The merchant saw the payment with its viewing key. If a shown value changes, the signature check will fail.</li>
+      <li><b>Does not prove:</b> anything the buyer chose not to reveal. It also does not let a stranger check the payment without trusting the merchant's key and server (in this demo, the server that issued it).</li>
+      <li><b>Not revealed:</b> the viewing key, the merchant's balance, and every other transaction.</li>
+      <li><b>This page:</b> loads nothing from other websites. The receipt in the link is sent only to the server that issued it, so it can check it. The browser check above sends nothing at all.</li>
+    </ul>
+  </details>
+
+  <div class="acts no-print"><button id="rcPrint" type="button" class="btn ghost hidden">Print</button></div>
+</div></div>
+<script>
+(function () {
+  'use strict';
+  var $ = function (id) { return document.getElementById(id); };
+
+  function mk(tag, cls, text) { var e = document.createElement(tag); if (cls) e.className = cls; if (text !== undefined) e.textContent = text; return e; }
+  function sigBytes(s) {
+    var t = String(s).replace(/-/g, '+').replace(/_/g, '/');
+    while (t.length % 4) t += '=';
+    var bin = atob(t), out = [];
+    for (var i = 0; i < bin.length; i++) out.push(bin.charCodeAt(i));
+    return out;
+  }
+  function barcode(sig) {
+    var NS = 'http://www.w3.org/2000/svg';
+    var svg = document.createElementNS(NS, 'svg');
+    var x = 0;
+    sigBytes(sig).slice(0, 48).forEach(function (b) {
+      var w = 1 + (b % 3), gap = 1 + ((b >> 3) % 2);
+      var r = document.createElementNS(NS, 'rect');
+      r.setAttribute('x', x); r.setAttribute('y', 0); r.setAttribute('width', w); r.setAttribute('height', 34); r.setAttribute('fill', '#1c1b17');
+      svg.appendChild(r);
+      x += w + gap;
+    });
+    svg.setAttribute('viewBox', '0 0 ' + x + ' 34');
+    svg.setAttribute('preserveAspectRatio', 'none');
+    svg.setAttribute('width', '100%'); svg.setAttribute('height', '34');
+    svg.setAttribute('class', 'rc-barcode');
+    svg.setAttribute('role', 'img');
+    svg.setAttribute('aria-label', 'Barcode drawn from the receipt signature');
+    return svg;
+  }
+  function row(label, value) {
+    var r = mk('div', 'rc-row');
+    r.appendChild(mk('span', 'rc-k', label));
+    var v = mk('span', 'rc-v');
+    if (value === null) {
+      var x = mk('span', 'rc-redact', 'XXXXXXXXXX');
+      x.setAttribute('aria-label', 'kept private by the buyer');
+      v.appendChild(x);
+    } else v.textContent = value;
+    r.appendChild(v);
+    return r;
+  }
+  function paper(f, fp, sig) {
+    var wrap = mk('div', 'rc-wrap');
+    var p = mk('div', 'rc-paper');
+    wrap.appendChild(p);
+    var b = mk('div', 'rc-body');
+    p.appendChild(b);
+    b.appendChild(mk('div', 'rc-brand', 'SELECTIVEPROOF'));
+    b.appendChild(mk('div', 'rc-sub', 'SHIELDED PAYMENT RECEIPT'));
+    b.appendChild(mk('div', 'rc-sub', 'ZCASH \u00b7 ' + (f.net === 'mainnet' ? 'MAINNET' : 'TESTNET')));
+    b.appendChild(mk('div', 'rc-rule'));
+    b.appendChild(mk('div', 'rc-label rc-center', 'AMOUNT PAID'));
+    b.appendChild(mk('div', 'rc-total', f.amount + ' ' + (f.unit || (f.net === 'mainnet' ? 'ZEC' : 'TAZ'))));
+    b.appendChild(mk('div', 'rc-stamp', 'PAID'));
+    b.appendChild(mk('div', 'rc-rule'));
+    b.appendChild(row('INVOICE', f.code));
+    b.appendChild(row('FOR', f.description ? f.description : null));
+    b.appendChild(row('DATE / TIME', f.time ? new Date(f.time * 1000).toLocaleString() : null));
+    var tx = mk('div', 'rc-stack');
+    tx.appendChild(mk('span', 'rc-k', 'TRANSACTION'));
+    if (f.txid) tx.appendChild(mk('span', 'rc-tx', f.txid));
+    else { var rd = mk('span', 'rc-tx'); var xx = mk('span', 'rc-redact', 'XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX'); xx.setAttribute('aria-label', 'kept private by the buyer'); rd.appendChild(xx); tx.appendChild(rd); }
+    b.appendChild(tx);
+    b.appendChild(row('BLOCK NO.', f.height ? String(f.height) : null));
+    b.appendChild(mk('div', 'rc-rule'));
+    b.appendChild(mk('div', 'rc-label rc-center', 'SIGNED \u00b7 ED25519'));
+    b.appendChild(barcode(sig));
+    b.appendChild(mk('div', 'rc-mini', 'KEY ' + fp));
+    b.appendChild(mk('div', 'rc-mini', 'SIG ' + String(sig).slice(0, 24) + '\u2026'));
+    var hidden = (f.description ? 0 : 1) + (f.time ? 0 : 1) + (f.txid ? 0 : 1);
+    b.appendChild(mk('div', 'rc-note', hidden
+      ? 'Black bars are details the buyer kept private. They are not in the signed data.'
+      : 'Every detail on this receipt is part of the signed data.'));
+    b.appendChild(mk('div', 'rc-thanks', '** THANK YOU **'));
+    return wrap;
+  }
+
+  function setBadge(kind) {
+    $('badge').className = 'badge ' + kind;
+    $('badgeIcon').textContent = kind === 'ok' ? '\u2713' : '\u2715';
+  }
+  function invalid(msg) {
+    setBadge('bad');
+    $('head').classList.remove('hidden');
+    $('title').textContent = 'Receipt not valid';
+    $('sub').textContent = 'Do not rely on this receipt.';
+    $('paperMount').textContent = '';
+    $('okLine').classList.add('hidden');
+    $('reason').textContent = msg; $('reason').classList.remove('hidden');
+  }
+
+  var m = /^#r=([A-Za-z0-9_-]+)$/.exec(location.hash);
+  if (!m) { invalid('There is no receipt in this link.'); return; }
+  var token = m[1];
+  $('selfCheck').classList.remove('hidden');
+
+  function b64uToBytes(str) {
+    var t = str.replace(/-/g, '+').replace(/_/g, '/');
+    while (t.length % 4) t += '=';
+    var bin = atob(t), out = new Uint8Array(bin.length);
+    for (var i = 0; i < bin.length; i++) out[i] = bin.charCodeAt(i);
+    return out;
+  }
+  function hex(bytes) { return Array.prototype.map.call(bytes, function (b) { return ('0' + b.toString(16)).slice(-2); }).join(''); }
+  // Same fixed key order as the server's canonicalReceipt(); any difference breaks the signature.
+  function canonical(p) {
+    var o = { v: 1, net: p.net, inv: p.inv, code: p.code, amount: p.amount };
+    if (p.desc !== undefined) o.desc = p.desc;
+    if (p.txid !== undefined) { o.txid = p.txid; o.h = p.h; }
+    if (p.t !== undefined) o.t = p.t;
+    return JSON.stringify(o);
+  }
+  var SPKI_PREFIX = [0x30, 0x2a, 0x30, 0x05, 0x06, 0x03, 0x2b, 0x65, 0x70, 0x03, 0x21, 0x00];
+  function parseKey(text) {
+    var t = String(text || '').replace(/-----[^-]+-----/g, '').replace(/\s+/g, '');
+    if (!/^[A-Za-z0-9_\-+\/=]+$/.test(t)) throw new Error('That does not look like a key.');
+    var b = b64uToBytes(t.replace(/=+$/, ''));
+    if (b.length === 32) return b;
+    if (b.length === 44) {
+      for (var i = 0; i < 12; i++) if (b[i] !== SPKI_PREFIX[i]) throw new Error('This is not an Ed25519 public key.');
+      return b.slice(12);
+    }
+    throw new Error('Wrong key length. Expected an Ed25519 public key.');
+  }
+  function showKey(info) {
+    if (!info || !info.raw) return;
+    $('pkIn').value = info.raw;
+    $('pkNote').classList.remove('hidden');
+    $('pkCopy').classList.remove('hidden');
+  }
+  $('pkCopy').addEventListener('click', function () {
+    var el = $('pkIn'); el.select();
+    var done = function () { $('pkCopy').textContent = 'Copied'; setTimeout(function () { $('pkCopy').textContent = 'Copy key'; }, 1500); };
+    (navigator.clipboard ? navigator.clipboard.writeText(el.value) : Promise.reject()).then(done, function () { document.execCommand('copy'); done(); });
+  });
+  $('rcPrint').addEventListener('click', function () { window.print(); });
+  $('pkVerify').addEventListener('click', function () {
+    var out = $('pkOut'), fp = $('pkFp');
+    function say(msg, cls) { out.className = 'msg ' + cls; out.textContent = msg; }
+    fp.textContent = '';
+    try {
+      if (!window.crypto || !crypto.subtle) throw new Error('This browser has no WebCrypto here. Open the page over HTTPS or 127.0.0.1.');
+      var raw = parseKey($('pkIn').value);
+      var parsed = JSON.parse(new TextDecoder().decode(b64uToBytes(token)));
+      if (!parsed || !parsed.p || typeof parsed.s !== 'string') throw new Error('This receipt link is damaged.');
+      var msg = new TextEncoder().encode(canonical(parsed.p));
+      var sig = b64uToBytes(parsed.s);
+      var spki = new Uint8Array(44); spki.set(SPKI_PREFIX, 0); spki.set(raw, 12);
+      crypto.subtle.digest('SHA-256', spki).then(function (d) { fp.textContent = 'Fingerprint of this key: ' + hex(new Uint8Array(d)).slice(0, 16); });
+      crypto.subtle.importKey('raw', raw, { name: 'Ed25519' }, false, ['verify'])
+        .then(function (key) { return crypto.subtle.verify({ name: 'Ed25519' }, key, sig, msg); })
+        .then(function (ok) {
+          if (ok) say('Signature is valid for this key. The fields shown above were signed by its holder.', 'ok');
+          else say('Signature does NOT match this key. The receipt was altered or signed by someone else.', 'bad');
+        })
+        .catch(function (e) {
+          // A key that is not a valid Ed25519 point can be rejected at import time (DataError)
+          // by some browsers. That is a failed check, not a missing feature.
+          var n = e && e.name;
+          if (n === 'DataError' || n === 'OperationError' || n === 'InvalidAccessError') say('This is not a valid Ed25519 public key, so the signature does NOT match.', 'bad');
+          else say('This browser cannot check Ed25519 signatures yet. Use a current Chrome, Edge, Firefox or Safari, or check with Node or OpenSSL.', 'warn');
+        });
+    } catch (e) { say(e.message || 'Could not check the signature.', 'bad'); }
+  });
+
+  fetch('/api/receipts/verify', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ token: token }) })
+    .then(function (r) { return r.json().then(function (j) { return { ok: r.ok, j: j }; }); })
+    .then(function (res) {
+      if (!res.ok) throw new Error(res.j && res.j.error || 'Could not check the receipt.');
+      var v = res.j;
+      if (!v.valid) return invalid(v.reason || 'This receipt could not be confirmed.');
+      var sig = '';
+      try { sig = JSON.parse(new TextDecoder().decode(b64uToBytes(token))).s || ''; } catch (e) { sig = ''; }
+      $('head').classList.add('hidden');
+      $('paperMount').textContent = '';
+      $('paperMount').appendChild(paper(v.fields, v.fingerprint, sig));
+      $('okLine').textContent = '\u2713 Valid. Signed and confirmed by the merchant.';
+      $('okLine').classList.remove('hidden');
+      $('rcPrint').classList.remove('hidden');
+      showKey(v.publicKey);
+    })
+    .catch(function (e) { invalid((e.message || 'Could not check the receipt.') + ' (The check needs the merchant server to be running.)'); });
+})();
+</script>
+</body>
+</html>

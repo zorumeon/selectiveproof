@@ -1,0 +1,20 @@
+{
+  "name": "selectiveproof",
+  "version": "2.0.0",
+  "private": true,
+  "description": "Prove one shielded Zcash payment exists without exposing your wallet history",
+  "main": "sp-server.js",
+  "scripts": {
+    "start": "node sp-server.js",
+    "build-css": "node build-css.js",
+    "make-demo-seed": "node make-demo-seed.js",
+    "reset": "node reset-data.js",
+    "test": "node --test"
+  },
+  "dependencies": {
+    "@ledgerhq/zcash-utils": "^2.8.0"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

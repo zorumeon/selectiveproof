@@ -1,0 +1,9 @@
+node_modules/
+.env
+receipt-key.pem
+*.pem
+invoices.json
+*.log
+.DS_Store
+
+# demo-invoices.json is intentionally NOT ignored: the showcase page needs it.

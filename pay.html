@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Pay an invoice</title>
+<style>
+:root{--bg:#e7e4da;--fg:#17150f;--mut:#6a665a;--card:#f8f6f0;--line:#cfcbbd;--bd:#8f8a78;--inp:#fffdf7;--ok:#166534;--warn:#92400e;--bad:#b91c1c;--paper:#f6f1e4;--ink:#14120d;--glow:rgba(20,18,13,.25)}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#000;--fg:#f4f1e8;--mut:#9a968a;--card:#0d0d0b;--line:#2a2924;--bd:#4a483f;--inp:#1a1a17;--ok:#4ade80;--warn:#fbbf24;--bad:#f87171;--glow:rgba(246,241,228,.32)}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font:15px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+.mono{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
+.hidden{display:none!important}
+.wrap{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:16px}
+.col{width:100%;max-width:448px;padding:24px 0}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:28px}
+.ctr{text-align:center}
+.badge{width:56px;height:56px;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 12px;font-size:24px;background:#f59e0b22;color:var(--warn)}
+.badge.ok{background:#16653422;color:var(--ok)}.badge.bad{background:#b91c1c22;color:var(--bad)}
+h1{margin:0;font-size:24px}
+.sub{margin:4px 0 0;font-size:14px;color:var(--mut)}
+.sum{margin-top:20px;background:var(--inp);border:1px solid var(--line);border-radius:12px;padding:16px;font-size:14px}
+.sum .r{display:flex;justify-content:space-between;gap:12px}.sum .r+.r{margin-top:12px}
+.sum .v{text-align:right;word-break:break-word;max-width:65%}.k{color:var(--mut)}
+.amt{color:var(--ok);font-weight:600}
+.lbl{font-size:12px;color:var(--mut);margin:16px 0 6px}
+.line{display:flex;gap:8px}
+.in{flex:1;min-width:0;background:var(--inp);color:var(--fg);border:1px solid var(--bd);border-radius:10px;padding:11px 13px;font-size:13px;outline:none}
+textarea.in{width:100%;resize:vertical}
+.hint{font-size:12px;color:var(--mut);margin:8px 0 0;line-height:1.5}
+.btn{display:inline-block;border:0;border-radius:10px;padding:12px 22px;background:var(--paper);color:var(--ink);box-shadow:inset 0 0 0 1px #14120d,0 6px 14px -8px var(--glow);font:600 15px inherit;cursor:pointer;text-decoration:none;text-align:center}
+.btn.full{width:100%}.btn:disabled{opacity:.45;cursor:not-allowed}
+.btn.ghost{background:transparent;color:var(--fg);box-shadow:none;border:1px solid var(--bd);padding:10px 16px;font-size:13px;font-weight:500}
+.btn:focus-visible,.in:focus-visible,a:focus-visible{outline:3px solid var(--fg);outline-offset:2px}
+.msg{margin:14px 0 0;min-height:1.25rem;font-size:13px;text-align:center;color:var(--mut);line-height:1.5}
+.msg.ok{color:var(--ok)}.msg.bad{color:var(--bad)}.msg.warn{color:var(--warn)}
+.txid{margin:8px 0 0;font-size:11px;color:var(--mut);text-align:center;word-break:break-all}
+.box{margin-top:20px;background:var(--inp);border:1px solid var(--line);border-radius:12px;padding:16px;font-size:14px}
+.cap{font-size:10px;letter-spacing:.15em;color:var(--mut);margin:0 0 4px}
+.chk{display:flex;align-items:center;gap:8px;margin:0 0 8px}.chk input{width:auto;margin:0}
+.acts{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;margin-top:20px}
+details{margin-top:20px;font-size:12px;color:var(--mut)}summary{cursor:pointer;color:var(--fg)}
+details ul{padding-left:18px;margin:8px 0 0}details li{margin-bottom:4px}
+.rc-paper{position:relative;background:var(--paper);color:var(--ink);font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:13px;line-height:1.45;max-width:390px;margin:26px auto}
+.rc-paper::before,.rc-paper::after{content:"";position:absolute;left:0;right:0;height:10px;background:var(--paper)}
+.rc-paper::before{bottom:100%;-webkit-mask:conic-gradient(from 135deg at top,#0000,#000 1deg 89deg,#0000 90deg) 50%/20px 100%;mask:conic-gradient(from 135deg at top,#0000,#000 1deg 89deg,#0000 90deg) 50%/20px 100%}
+.rc-paper::after{top:100%;-webkit-mask:conic-gradient(from -45deg at bottom,#0000,#000 1deg 89deg,#0000 90deg) 50%/20px 100%;mask:conic-gradient(from -45deg at bottom,#0000,#000 1deg 89deg,#0000 90deg) 50%/20px 100%}
+.rc-edge{display:none}.rc-body{padding:22px 20px}
+.rc-brand{text-align:center;letter-spacing:.2em;font-weight:700;font-size:15px}
+.rc-sub{text-align:center;color:#6b6350;font-size:11px;letter-spacing:.08em}
+.rc-rule{border-top:1px dashed #b3aa8e;margin:10px 0}
+.rc-label{font-size:11px;font-weight:700;letter-spacing:.06em;color:#6b6350}.rc-center{text-align:center}
+.rc-total{text-align:center;font-size:26px;font-weight:700}
+.rc-stamp{width:max-content;margin:6px auto 0;border:3px solid #166534;color:#166534;padding:1px 10px;font-weight:800;letter-spacing:.1em;transform:rotate(-8deg)}
+.rc-row{display:flex;justify-content:space-between;gap:12px;padding:3px 0;align-items:baseline}
+.rc-k{color:#6b6350;font-size:12px}.rc-v{text-align:right;word-break:break-all;max-width:64%}
+.rc-stack{padding:3px 0}.rc-tx{display:block;word-break:break-all;font-size:11px}
+.rc-redact{background:var(--ink);color:var(--ink);border-radius:2px;user-select:none}
+.rc-barcode{display:block;margin:8px 0}.rc-mini{font-size:10px;color:#6b6350;word-break:break-all}
+.rc-note{text-align:center;font-size:11px;color:#6b6350;margin-top:10px}
+.rc-thanks{text-align:center;letter-spacing:.15em;font-size:12px;margin-top:10px}
+@media print{body{background:#fff}.no-print{display:none!important}}
+
+/* ---- SelectiveProof shared design layer ---- */
+:root:not([data-theme]){}
+:root[data-theme="light"]{--bg:#e7e4da;--fg:#17150f;--mut:#6a665a;--card:#f8f6f0;--line:#cfcbbd;--bd:#8f8a78;--inp:#fffdf7;--ok:#166534;--warn:#92400e;--bad:#b91c1c;--glow:rgba(20,18,13,.25)}
+:root[data-theme="dark"]{--bg:#000;--fg:#f4f1e8;--mut:#9a968a;--card:#0d0d0b;--line:#2a2924;--bd:#4a483f;--inp:#1a1a17;--ok:#4ade80;--warn:#fbbf24;--bad:#f87171;--glow:rgba(246,241,228,.32)}
+.sp-top{display:flex;align-items:center;gap:12px;max-width:56rem;margin:0 auto;padding:24px 16px 0}
+.sp-top a{display:flex;align-items:center;gap:12px;color:inherit;text-decoration:none;font-weight:700;font-size:18px}
+.sp-logo{width:34px;height:34px;display:block;flex:none}
+.sp-net{margin-left:auto;font-size:10px;letter-spacing:.2em;color:var(--warn);border:1px solid color-mix(in srgb,var(--warn) 45%,transparent);border-radius:4px;padding:4px 8px}
+.btn.sp-thm{flex:none;width:34px;height:34px;padding:0;border-radius:50%;display:inline-flex;align-items:center;justify-content:center}
+.sp-thm svg{width:16px;height:16px;display:block}
+.wrap{min-height:calc(100vh - 70px)}
+.card{padding:30px;border-radius:14px}
+.btn{position:relative;overflow:hidden;transition:transform .2s cubic-bezier(.2,.8,.2,1),box-shadow .2s ease,background-color .15s ease,border-color .15s ease}
+.btn:not(.ghost)::after{content:"";position:absolute;top:0;bottom:0;left:-60%;width:40%;background:linear-gradient(100deg,transparent,rgba(255,255,255,.75),transparent);transform:skewX(-20deg);transition:left .55s ease;pointer-events:none}
+.btn:not(.ghost):hover{transform:translateY(-2px);box-shadow:inset 0 0 0 1px #14120d,0 14px 24px -10px var(--glow)}
+.btn:not(.ghost):hover::after{left:130%}
+.btn:not(.ghost):active{transform:translateY(0) scale(.97);transition-duration:.06s}
+.btn.ghost:hover{transform:translateY(-1px);background:var(--inp);border-color:var(--fg)}
+.btn.ghost:active{transform:translateY(1px) scale(.98)}
+.btn:disabled,.btn:disabled:hover{transform:none}.btn:disabled::after{display:none}
+.sum,.box{padding:18px 20px}
+.rc-paper{margin:34px auto}
+:root[data-theme="light"] .rc-paper{filter:drop-shadow(0 0 .5px rgba(20,18,13,.45)) drop-shadow(0 8px 14px rgba(20,18,13,.14))}
+@media not (prefers-color-scheme:dark){:root:not([data-theme="dark"]) .rc-paper{filter:drop-shadow(0 0 .5px rgba(20,18,13,.45)) drop-shadow(0 8px 14px rgba(20,18,13,.14))}}
+@media(prefers-reduced-motion:reduce){.btn,.btn::after{transition:none}.btn:hover,.btn:active{transform:none}}
+
+/* SelectiveProof shared UI refresh */
+:root{color-scheme:light;--bg:#f4f7fb;--fg:#152746;--mut:#64748b;--card:#fff;--line:#dce5f1;--bd:#b8c8dc;--inp:#fff;--ok:#087f5b;--warn:#9a6700;--bad:#b42318;--paper:#edf4ff;--ink:#152746}
+@media(prefers-color-scheme:dark){:root{color-scheme:dark;--bg:#0b1220;--fg:#edf4ff;--mut:#9aabc4;--card:#111c2e;--line:#293a52;--bd:#435774;--inp:#0f1a2b;--ok:#5ee0b1;--warn:#ffd166;--bad:#ff8585;--paper:#1b3150;--ink:#edf4ff}}
+body{background:var(--bg)!important;color:var(--fg)!important;font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif!important}.sp-top{border-bottom:1px solid var(--line);padding-bottom:16px}.sp-logo{border-radius:9px}.btn{background:#1769e8!important;color:#fff!important;border:1px solid #1769e8!important;border-radius:10px!important;box-shadow:none!important;font-weight:650!important}.btn.ghost{background:var(--card)!important;color:var(--fg)!important;border-color:var(--line)!important}.btn:hover{filter:brightness(.96)}input,.in{background:var(--inp)!important;color:var(--fg)!important;border-color:var(--bd)!important;border-radius:9px!important;min-height:44px}main,.wrap,.panel,.card{border-color:var(--line)!important}h1,h2,h3{letter-spacing:-.025em}input:focus-visible,button:focus-visible,a:focus-visible{outline:3px solid #8db8ff;outline-offset:2px}.hint{color:var(--mut)!important}.sp-net{background:#edf4ff;color:#1458c8;border-radius:999px;padding:5px 9px;font-weight:700}@media(max-width:600px){.sp-top{gap:10px}.btn{min-height:42px}}
+
+</style>
+<style>
+/* SelectiveProof v4.0 — usability-first redesign */
+:root{color-scheme:light;--bg:#f4f7fb;--fg:#14243d;--mut:#61718a;--card:#fff;--line:#dce6f3;--bd:#b9cbe2;--inp:#fbfdff;--ok:#087f5b;--warn:#9a6700;--bad:#b42318;--paper:#1769e8;--ink:#fff;--glow:rgba(23,105,232,.13)}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){color-scheme:dark;--bg:#0b1424;--fg:#e9f1ff;--mut:#a0b2cc;--card:#121f33;--line:#263955;--bd:#3c5271;--inp:#0e1a2c;--ok:#52d6a2;--warn:#ffd166;--bad:#ff8c8c;--paper:#2878f0;--ink:#fff;--glow:rgba(40,120,240,.2)}}
+body{background:var(--bg)!important;color:var(--fg)!important;font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif!important;line-height:1.55!important}h1{letter-spacing:-.035em!important;font-weight:750!important}h2,h3{font-weight:700!important;letter-spacing:-.015em}a{color:#1769e8}button,.btn,button.b{border-radius:11px!important;transition:transform .12s ease,box-shadow .12s ease,background .12s ease!important}button:focus-visible,a:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-visible{outline:3px solid #80b4ff!important;outline-offset:2px!important}input,textarea,select{border:1px solid var(--bd)!important;border-radius:10px!important;background:var(--inp)!important;color:var(--fg)!important;min-height:42px}label{font-weight:650!important;color:var(--fg)!important;font-size:13px!important}.card,.paper,.panel,.box{background:var(--card)!important;border:1px solid var(--line)!important;border-radius:16px!important;box-shadow:0 8px 28px rgba(20,50,90,.045)!important}.wrap{max-width:960px!important}.btn,button.b{background:#1769e8!important;color:#fff!important;border:1px solid #1769e8!important;box-shadow:none!important;font-weight:700!important}.btn.ghost,button.g{background:transparent!important;color:var(--fg)!important;border:1px solid var(--bd)!important}.sub,.muted,.hint{color:var(--mut)!important}.badge,.tag{border-radius:999px!important;padding:4px 10px!important;font-weight:700!important}.row{gap:12px}.hidden{display:none!important}table{width:100%;border-collapse:separate;border-spacing:0}th{background:color-mix(in srgb,var(--bg) 80%,var(--card));font-size:12px;text-transform:none;letter-spacing:0;color:var(--mut)}td,th{padding:11px 12px;border-bottom:1px solid var(--line)}tr:last-child td{border-bottom:0}.netb{border-radius:999px!important}::selection{background:#cfe2ff;color:#14243d}
+@media(max-width:640px){.wrap{padding:12px!important}.card{padding:18px!important}.row{flex-wrap:wrap}.row>*{min-width:100%}h1{font-size:clamp(22px,6vw,32px)!important}button,.btn{min-height:44px}.cols{grid-template-columns:1fr!important}.acts{display:flex;flex-wrap:wrap;gap:8px}}
+</style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js" referrerpolicy="no-referrer"></script>
+</head>
+<body>
+<header class="sp-top no-print"><a href="/" title="SelectiveProof" aria-label="SelectiveProof, back to start page"><svg class="sp-logo" viewBox="0 0 34 34" width="34" height="34" role="img" aria-label="SelectiveProof logo"><polygon points="5,5 7,3 9,5 11,3 13,5 15,3 17,5 19,3 21,5 23,3 25,5 27,3 29,5 29,29 27,31 25,29 23,31 21,29 19,31 17,29 15,31 13,29 11,31 9,29 7,31 5,29" fill="#f6f1e4" stroke="#14120d" stroke-opacity=".35"/><rect x="9" y="9" width="16" height="1.6" rx=".8" fill="#14120d" fill-opacity=".55"/><rect x="9" y="13" width="11" height="1.6" rx=".8" fill="#14120d" fill-opacity=".55"/><rect x="9" y="17.5" width="16" height="4.5" rx=".6" fill="#14120d"/><rect x="9" y="25" width="7" height="1.8" rx=".9" fill="#22c55e"/></svg><span>SelectiveProof</span></a><span class="sp-net" id="netBadge">TESTNET</span><button type="button" class="btn ghost sp-thm" aria-label="Switch theme"></button></header>
+<div class="wrap">
+  <div id="card" class="col"><div class="card">
+    <div class="ctr">
+      <div id="badge" class="badge"><span id="badgeIcon">&#8230;</span></div>
+      <h1 id="title">Pay an invoice</h1>
+      <p id="sub" class="sub"></p>
+    </div>
+    <div id="body" class="hidden">
+      <div class="sum">
+        <div class="r"><span class="k">Amount</span><span id="amt" class="amt"></span></div>
+        <div id="descRow" class="r"><span class="k">For</span><span id="desc" class="v"></span></div>
+      </div>
+      <div id="payBox">
+        <p class="lbl">1. Send to this shielded address</p>
+        <div class="line"><input id="addr" readonly class="in mono" aria-label="Shielded payment address"><button id="copyAddr" type="button" class="btn ghost">Copy</button></div>
+        <p class="lbl">2. Add this code to the memo</p>
+        <div class="line"><input id="code" readonly class="in mono" aria-label="Invoice memo code"><button id="copyCode" type="button" class="btn ghost">Copy</button></div>
+        <div class="qr-panel" style="margin-top:16px;padding:16px;border:1px solid var(--line);border-radius:14px;text-align:center">
+          <p class="lbl" style="margin-top:0">3. Scan payment details</p>
+          <div id="paymentQr" role="img" aria-label="QR code containing the payment address and invoice memo code" style="display:inline-flex;min-width:220px;min-height:220px;align-items:center;justify-content:center;background:#fff;padding:10px;border-radius:8px"></div>
+          <p id="qrCaption" class="hint">QR contains the address and invoice memo code. Confirm your wallet supports the memo field before sending.</p>
+          <p id="qrError" class="msg bad hidden" role="status"></p>
+        </div>
+        <p class="hint">Include this exact code in the payment memo so the server can match the payment to this invoice. Verify the network and amount in your wallet before sending.</p>
+        <div class="acts" style="margin-top:14px"><button id="copyPayment" type="button" class="btn full">Copy address + memo code</button><button id="copyPayLink" type="button" class="btn ghost">Copy payment link</button></div>
+      </div>
+      <p id="state" class="msg" role="status"></p>
+      <p id="tx" class="txid mono"></p>
+      <div id="receiptBox" class="box hidden">
+        <p class="cap">SHARE A RECEIPT</p>
+        <p class="hint">Choose what the receipt shows. The amount and invoice code are always included. Unchecked details stay private.</p>
+        <p></p>
+        <label id="rvDescRow" class="chk"><input type="checkbox" id="rvDesc" checked> What it was for</label>
+        <label id="rvTxRow" class="chk"><input type="checkbox" id="rvTx"> Transaction ID and block height</label>
+        <label id="rvTimeRow" class="chk"><input type="checkbox" id="rvTime" checked> Date and time of payment</label>
+        <button id="rcBtn" type="button" class="btn full">Create receipt</button>
+        <p id="rcErr" class="msg bad" role="status"></p>
+      </div>
+    </div>
+    <p id="err" class="msg bad hidden"></p>
+  </div></div>
+
+  <div id="paperView" class="col hidden">
+    <div id="paperMount"></div>
+    <div class="acts no-print">
+      <a id="rcOpen" target="_blank" rel="noopener" class="btn">Check receipt</a>
+      <button id="rcCopy" type="button" class="btn ghost">Copy link</button>
+      <button id="rcPrint" type="button" class="btn ghost">Print</button>
+      <button id="rcBack" type="button" class="btn ghost">Back</button>
+    </div>
+    <p class="hint ctr no-print">The link holds only the fields shown on this receipt.</p>
+  </div>
+</div>
+<script>
+(function () {
+  'use strict';
+  var $ = function (id) { return document.getElementById(id); };
+  var id = new URLSearchParams(location.search).get('i') || '';
+  var timer = null, receiptUrl = '', lastInv = null;
+
+  function mk(tag, cls, text) { var e = document.createElement(tag); if (cls) e.className = cls; if (text !== undefined) e.textContent = text; return e; }
+  function sigBytes(s) {
+    var t = String(s).replace(/-/g, '+').replace(/_/g, '/');
+    while (t.length % 4) t += '=';
+    var bin = atob(t), out = [];
+    for (var i = 0; i < bin.length; i++) out.push(bin.charCodeAt(i));
+    return out;
+  }
+  function barcode(sig) {
+    var NS = 'http://www.w3.org/2000/svg';
+    var svg = document.createElementNS(NS, 'svg');
+    var x = 0;
+    sigBytes(sig).slice(0, 48).forEach(function (b) {
+      var w = 1 + (b % 3), gap = 1 + ((b >> 3) % 2);
+      var r = document.createElementNS(NS, 'rect');
+      r.setAttribute('x', x); r.setAttribute('y', 0); r.setAttribute('width', w); r.setAttribute('height', 34); r.setAttribute('fill', '#1c1b17');
+      svg.appendChild(r);
+      x += w + gap;
+    });
+    svg.setAttribute('viewBox', '0 0 ' + x + ' 34');
+    svg.setAttribute('preserveAspectRatio', 'none');
+    svg.setAttribute('width', '100%'); svg.setAttribute('height', '34');
+    svg.setAttribute('class', 'rc-barcode');
+    svg.setAttribute('role', 'img');
+    svg.setAttribute('aria-label', 'Barcode drawn from the receipt signature');
+    return svg;
+  }
+  function row(label, value) {
+    var r = mk('div', 'rc-row');
+    r.appendChild(mk('span', 'rc-k', label));
+    var v = mk('span', 'rc-v');
+    if (value === null) {
+      var x = mk('span', 'rc-redact', 'XXXXXXXXXX');
+      x.setAttribute('aria-label', 'kept private by the buyer');
+      v.appendChild(x);
+    } else v.textContent = value;
+    r.appendChild(v);
+    return r;
+  }
+  function paper(f, fp, sig) {
+    var wrap = mk('div', 'rc-wrap');
+    var p = mk('div', 'rc-paper');
+    wrap.appendChild(p);
+    var b = mk('div', 'rc-body');
+    p.appendChild(b);
+    b.appendChild(mk('div', 'rc-brand', 'SELECTIVEPROOF'));
+    b.appendChild(mk('div', 'rc-sub', 'SHIELDED PAYMENT RECEIPT'));
+    b.appendChild(mk('div', 'rc-sub', 'ZCASH \u00b7 ' + (f.net === 'mainnet' ? 'MAINNET' : 'TESTNET')));
+    b.appendChild(mk('div', 'rc-rule'));
+    b.appendChild(mk('div', 'rc-label rc-center', 'AMOUNT PAID'));
+    b.appendChild(mk('div', 'rc-total', f.amount + ' ' + (f.unit || (f.net === 'mainnet' ? 'ZEC' : 'TAZ'))));
+    b.appendChild(mk('div', 'rc-stamp', 'PAID'));
+    b.appendChild(mk('div', 'rc-rule'));
+    b.appendChild(row('INVOICE', f.code));
+    b.appendChild(row('FOR', f.description ? f.description : null));
+    b.appendChild(row('DATE / TIME', f.time ? new Date(f.time * 1000).toLocaleString() : null));
+    var tx = mk('div', 'rc-stack');
+    tx.appendChild(mk('span', 'rc-k', 'TRANSACTION'));
+    if (f.txid) tx.appendChild(mk('span', 'rc-tx', f.txid));
+    else { var rd = mk('span', 'rc-tx'); var xx = mk('span', 'rc-redact', 'XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX'); xx.setAttribute('aria-label', 'kept private by the buyer'); rd.appendChild(xx); tx.appendChild(rd); }
+    b.appendChild(tx);
+    b.appendChild(row('BLOCK NO.', f.height ? String(f.height) : null));
+    b.appendChild(mk('div', 'rc-rule'));
+    b.appendChild(mk('div', 'rc-label rc-center', 'SIGNED \u00b7 ED25519'));
+    b.appendChild(barcode(sig));
+    b.appendChild(mk('div', 'rc-mini', 'KEY ' + fp));
+    b.appendChild(mk('div', 'rc-mini', 'SIG ' + String(sig).slice(0, 24) + '\u2026'));
+    var hidden = (f.description ? 0 : 1) + (f.time ? 0 : 1) + (f.txid ? 0 : 1);
+    b.appendChild(mk('div', 'rc-note', hidden
+      ? 'Black bars are details the buyer kept private. They are not in the signed data.'
+      : 'Every detail on this receipt is part of the signed data.'));
+    b.appendChild(mk('div', 'rc-thanks', '** THANK YOU **'));
+    return wrap;
+  }
+
+  function copyText(text, btn, label) {
+    var done = function () { btn.textContent = 'Copied'; setTimeout(function () { btn.textContent = label; }, 1500); };
+    var fallback = function () {
+      var t = document.createElement('textarea');
+      t.value = text; document.body.appendChild(t); t.select();
+      try { document.execCommand('copy'); done(); } catch (e) { /* nothing more to try */ }
+      document.body.removeChild(t);
+    };
+    if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(text).then(done, fallback);
+    else fallback();
+  }
+  function copy(inputId, btnId) { var el = $(inputId); el.select(); copyText(el.value, $(btnId), 'Copy'); }
+  function renderPaymentQr(inv) {
+    var mount = $('paymentQr');
+    var err = $('qrError');
+    if (!mount) return;
+    mount.textContent = '';
+    err.classList.add('hidden');
+    // Encode an explicit text payload rather than pretending every wallet supports
+    // a standardized Zcash URI with memo parameters.
+    var payload = 'Zcash payment\nNetwork: ' + (inv.net === 'mainnet' ? 'MAINNET' : 'TESTNET') +
+      '\nAddress: ' + String(inv.address || '') + '\nAmount: ' + String(inv.amount || '') + ' ' +
+      (inv.unit || (inv.net === 'mainnet' ? 'ZEC' : 'TAZ')) + '\nMemo: ' + String(inv.code || '');
+    if (typeof window.QRCode !== 'function') {
+      err.textContent = 'QR generator could not load. Check your internet connection and reload this page.';
+      err.classList.remove('hidden');
+      return;
+    }
+    try { new window.QRCode(mount, { text: payload, width: 220, height: 220, colorDark: '#111827', colorLight: '#ffffff', correctLevel: window.QRCode.CorrectLevel.M }); }
+    catch (e) { err.textContent = 'Could not create the QR code. Use the copy buttons instead.'; err.classList.remove('hidden'); }
+  }
+  $('copyAddr').addEventListener('click', function () { copy('addr', 'copyAddr'); });
+  $('copyCode').addEventListener('click', function () { copy('code', 'copyCode'); });
+  $('copyPayment').addEventListener('click', function () {
+    var text = 'Zcash payment\nNetwork: ' + $('netBadge').textContent + '\nAddress: ' + $('addr').value + '\nMemo code: ' + $('code').value;
+    copyText(text, $('copyPayment'), 'Copy address + memo code');
+  });
+  $('copyPayLink').addEventListener('click', function () { copyText(location.href, $('copyPayLink'), 'Copy payment link'); });
+  $('rcCopy').addEventListener('click', function () { copyText(receiptUrl, $('rcCopy'), 'Copy link'); });
+  $('rcPrint').addEventListener('click', function () { window.print(); });
+  $('rcBack').addEventListener('click', function () { $('paperView').classList.add('hidden'); $('card').classList.remove('hidden'); });
+
+  function showReceipt(token) {
+    var sig = '';
+    try {
+      var t = token.replace(/-/g, '+').replace(/_/g, '/');
+      while (t.length % 4) t += '=';
+      sig = JSON.parse(atob(t)).s || '';
+    } catch (e) { sig = ''; }
+    return fetch('/api/receipts/verify', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ token: token }) })
+      .then(function (r) { return r.json().then(function (j) { return { ok: r.ok, j: j }; }); })
+      .then(function (res) {
+        if (!res.ok) throw new Error(res.j && res.j.error || 'Could not check the receipt.');
+        var v = res.j;
+        if (!v.valid) throw new Error(v.reason || 'The receipt could not be confirmed.');
+        $('paperMount').textContent = '';
+        $('paperMount').appendChild(paper(v.fields, v.fingerprint, sig));
+        $('card').classList.add('hidden');
+        $('paperView').classList.remove('hidden');
+        window.scrollTo(0, 0);
+      });
+  }
+
+  $('rcBtn').addEventListener('click', function () {
+    if (!lastInv) return;
+    if (id === 'demo') {
+      var D = lastInv, tx = $('rvTx').checked;
+      receiptUrl = location.href; $('rcOpen').classList.add('hidden'); $('rcCopy').classList.add('hidden');
+      $('paperMount').textContent = '';
+      $('paperMount').appendChild(paper({ amount: D.amount, code: D.code, description: $('rvDesc').checked ? D.description : '', time: $('rvTime').checked ? D.paidTime : 0, txid: tx ? D.txid : '', height: tx ? D.paidHeight : 0 }, 'DEMO0000DEMO0000', 'ZGVtbyBzaWduYXR1cmUgbm90IHJlYWwgZGVtbyBzaWduYXR1cmUgbm90IHJlYWw'));
+      $('paperMount').querySelector('.rc-body').appendChild(mk('div', 'rc-note', 'SAMPLE ONLY. NOT A REAL SIGNATURE.'));
+      $('card').classList.add('hidden'); $('paperView').classList.remove('hidden'); window.scrollTo(0, 0);
+      return;
+    }
+    var btn = $('rcBtn');
+    btn.disabled = true;
+    $('rcErr').textContent = '';
+    fetch('/api/invoices/' + encodeURIComponent(id) + '/receipt', {
+      method: 'POST', headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ reveal: { description: $('rvDesc').checked, transaction: $('rvTx').checked, time: $('rvTime').checked } })
+    }).then(function (r) { return r.json().then(function (j) { return { ok: r.ok, j: j }; }); })
+      .then(function (res) {
+        if (!res.ok) throw new Error(res.j && res.j.error || 'Could not create the receipt.');
+        receiptUrl = location.origin + res.j.path;
+        $('rcOpen').href = receiptUrl;
+        return showReceipt(res.j.token);
+      })
+      .catch(function (e) { $('rcErr').textContent = e.message; })
+      .then(function () { btn.disabled = false; });
+  });
+
+  function fail(msg) {
+    $('body').classList.add('hidden');
+    $('err').textContent = msg; $('err').classList.remove('hidden');
+    $('sub').textContent = '';
+    if (timer) { clearInterval(timer); timer = null; }
+  }
+
+  function setState(cls, text) { var s = $('state'); s.className = 'msg' + (cls ? ' ' + cls : ''); s.textContent = text; }
+
+  function render(inv) {
+    $('body').classList.remove('hidden');
+    var unit = inv.unit || (inv.net === 'mainnet' ? 'ZEC' : 'TAZ');
+    $('netBadge').textContent = inv.net === 'mainnet' ? 'MAINNET' : 'TESTNET';
+    document.title = (inv.net === 'mainnet' ? '[Mainnet] ' : '') + 'Pay an invoice';
+    $('amt').textContent = inv.amount + ' ' + unit;
+    $('descRow').classList.toggle('hidden', !inv.description);
+    $('desc').textContent = inv.description || '';
+    $('addr').value = inv.address;
+    $('code').value = inv.code;
+    renderPaymentQr(inv);
+    var badge = $('badge'), icon = $('badgeIcon');
+    if (inv.status === 'paid') {
+      badge.className = 'badge ok'; icon.innerHTML = '&#10003;';
+      $('title').textContent = 'Payment confirmed';
+      $('sub').textContent = 'Thank you. This invoice is paid.';
+      setState('ok', 'Received ' + inv.received + ' ' + unit + (inv.paidHeight ? ' in block ' + inv.paidHeight : '') + '.');
+      $('tx').textContent = inv.txid ? 'Transaction ' + inv.txid : '';
+      $('payBox').classList.add('hidden');
+      lastInv = inv;
+      $('receiptBox').classList.remove('hidden');
+      $('rvDescRow').classList.toggle('hidden', !inv.description);
+      $('rvTxRow').classList.toggle('hidden', !inv.txid || !inv.paidHeight);
+      $('rvTimeRow').classList.toggle('hidden', !inv.paidTime);
+      if (timer) { clearInterval(timer); timer = null; }
+    } else if (inv.status === 'confirming') {
+      badge.className = 'badge'; icon.innerHTML = '&#8230;';
+      $('title').textContent = 'Payment detected';
+      $('sub').textContent = 'Waiting for enough confirmations before this invoice becomes final.';
+      setState('warn', 'Received ' + inv.received + ' ' + unit + '. Confirmations: ' + (inv.confirmations || 0) + '/' + (inv.requiredConfirmations || 3) + '.');
+      $('payBox').classList.add('hidden');
+      $('receiptBox').classList.add('hidden');
+    } else if (inv.status === 'partial') {
+      badge.className = 'badge'; icon.innerHTML = '&#8230;';
+      $('title').textContent = 'Partly paid';
+      $('sub').textContent = 'Send the remaining amount with the same memo code.';
+      setState('warn', 'Received ' + inv.received + ' of ' + inv.amount + ' ' + unit + '.');
+    } else {
+      badge.className = 'badge'; icon.innerHTML = '&#8230;';
+      $('title').textContent = 'Pay an invoice';
+      $('sub').textContent = 'Waiting for your payment. This page updates by itself.';
+      setState('', 'Waiting for payment...');
+    }
+  }
+
+  function load() {
+    fetch('/api/invoices/' + encodeURIComponent(id)).then(function (r) {
+      return r.json().then(function (j) { return { ok: r.ok, j: j }; });
+    }).then(function (res) {
+      if (!res.ok) return fail(res.j && res.j.error || 'Invoice not found.');
+      render(res.j);
+    }).catch(function () { setState('', 'Cannot reach the server. Retrying...'); });
+  }
+
+  if (id === 'demo') {
+    var paid = new URLSearchParams(location.search).get('s') === 'paid';
+    render({ amount: '0.012345', description: 'Coffee and snacks', address: 'utest1demo00000000000000000000000000000000000000000000000000000000', code: 'SP-DEMO-4821', status: paid ? 'paid' : 'waiting', received: '0.012345', paidHeight: 4528911, paidTime: Math.floor(Date.now() / 1000) - 3600, txid: '9f3a1c5be2d04a77c81f6e0b3d92a4f5c7e8106b2a9d34f0e1c5b7a8d6e47b02' });
+    if (!paid) setState('', 'Sample invoice for preview. Nothing is being watched.');
+  }
+  else if (!/^[0-9a-f]{8,32}$/.test(id)) { fail('This invoice link is not valid.'); }
+  else { load(); timer = setInterval(load, 4000); }
+})();
+</script>
+<script>
+(function(){var b=document.querySelector('.sp-thm'),r=document.documentElement;
+function dark(){return r.dataset.theme?r.dataset.theme==='dark':matchMedia('(prefers-color-scheme:dark)').matches}
+function set(){var d=dark(),l=d?'Switch to light mode':'Switch to dark mode';
+b.innerHTML=d?'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>':'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>';b.title=l;b.setAttribute('aria-label',l)}
+b.addEventListener('click',function(){r.dataset.theme=dark()?'light':'dark';set()});set()})();
+</script>
+</body>
+</html>
