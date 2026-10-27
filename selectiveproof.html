@@ -868,6 +868,28 @@ body:not(.light) .receipt{
 }
 
 </style>
+<style id="selective-receipt-interaction-polish">
+/* Fast, visible feedback for selective-disclosure controls. */
+#chips .chip{
+  min-height:38px;
+  padding:8px 14px;
+  transition:background-color .10s ease,border-color .10s ease,box-shadow .10s ease;
+}
+#chips .chip input{
+  width:17px;
+  height:17px;
+  cursor:pointer;
+}
+#chips .chip:has(input:checked){
+  box-shadow:inset 0 0 0 1px currentColor;
+}
+#payReceipt .v.bar{
+  transition:opacity .10s ease;
+}
+@media(prefers-reduced-motion:reduce){
+  #chips .chip,#payReceipt .v.bar{transition:none}
+}
+</style>
 </head>
 <body>
 <script>try{if(localStorage.getItem("sp-theme")==="light")document.body.classList.add("light")}catch(e){}</script>
@@ -1131,7 +1153,7 @@ window.addEventListener("storage",e=>{
 function sessAddr(d,net){const c=[d&&d.sessions&&d.sessions[net]&&d.sessions[net].address,d&&d[net]&&d[net].address,d&&d.net===net&&d.address,d&&!d.net&&!d.sessions&&d.address];return c.find(a=>typeof a==="string"&&validAddr(net,a))||""}
 function autoWallet(net,a){if(!validAddr(net,a)||wallet(net)===a)return;store.set("sp-wallet-"+net,a);renderWallet();toast("Wallet connected from merchant session \u00b7 "+(net==="mainnet"?"Mainnet":"Testnet"))}
 /* ===== receipt rendering ===== */
-const reveal={desc:true,code:true,addr:true,txid:true};
+const reveal={invoice:true,desc:true,code:true,addr:true,txid:true};
 function rcpt(d,o={}){
   const show=k=>reveal===o.reveal?reveal[k]!==false:(o.reveal?o.reveal[k]!==false:true);
   const row=(label,val,k)=>'<div class="r"><span class="k">'+label+'</span>'+((k?show(k):true)&&val?'<span class="v">'+esc(val)+'</span>':'<span class="v bar" role="img" aria-label="hidden by the buyer"></span>')+'</div>';
@@ -1148,7 +1170,9 @@ const SAMPLE={id:"inv_8f3a21c9",net:"testnet",amount:0.012345,description:"Coffe
 function drawHero(list){const l=(list||[]).slice().sort((a,b)=>(b.createdAt||0)-(a.createdAt||0))[0];$("#heroReceipt").innerHTML=rcpt(l||SAMPLE,{tilt:true,reveal:{}})}
 function drawPayReceipt(){$("#payReceipt").innerHTML=rcpt(selectedInvoice||SAMPLE,{reveal:reveal})}
 function drawPrev(){const net=$("#invoiceNet").value;$("#prevReceipt").innerHTML=rcpt({net,amount:Number($("#amount").value||0),description:$("#description").value.trim(),status:"draft"},{reveal:{}})}
-$$("#chips input").forEach(i=>i.addEventListener("change",()=>{reveal[i.dataset.rv]=i.checked;drawPayReceipt()}));
+$$("#chips input").forEach(i=>{
+  i.addEventListener("input",()=>{reveal[i.dataset.rv]=i.checked;drawPayReceipt()});
+});
 $("#amount").addEventListener("input",drawPrev);$("#description").addEventListener("input",drawPrev);$("#invoiceNet").addEventListener("change",drawPrev);
 $("#copyReceipt").addEventListener("click",async()=>{const i=selectedInvoice;if(!i){toast("Open an invoice first");return}
   const L=["SelectiveProof receipt \u00b7 Zcash "+(i.net==="mainnet"?"mainnet":"testnet"),"Amount: "+fmt(i.amount)+" "+unit(i.net),"Status: "+(i.status||"unknown")];
