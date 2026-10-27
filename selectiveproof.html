@@ -560,6 +560,313 @@ body{background:radial-gradient(ellipse at 50% -18%,#252a32 0%,#171a20 38%,#1012
 .network,.field input,.field select,.field textarea,.address{background:#11151a;border-color:#343b45}
 .btn:not(.primary){background:#1c2128;border-color:#343b45}
 .btn:hover{background:#252b34;border-color:#46505d}
+
+/* Final comfort pass: softer light theme + lower-glare receipt paper */
+body.light{
+  --bg:#e5e6e4;
+  --panel:#f0f0ed;
+  --panel2:#e7e8e5;
+  --text:#202326;
+  --muted:#5f666d;
+  --line:#c9ccc9;
+  background:#e5e6e4;
+  color:#202326;
+}
+body.light .sidebar{background:#e1e2df!important;border-color:#c8cbc8!important}
+body.light .hero{background:#edeeeb!important;border-color:#c8cbc8!important}
+body.light .stat,
+body.light .card{background:#f0f0ed!important;border-color:#c9ccc9!important}
+body.light .network,
+body.light .field input,
+body.light .field select,
+body.light .field textarea,
+body.light .address{background:#e9eae7!important;color:#202326!important;border-color:#c4c8c5!important}
+body.light .muted,
+body.light .help,
+body.light .stat .hint,
+body.light .footer,
+body.light .sidefoot{color:#5f666d!important}
+body.light .nav{color:#444a50!important}
+body.light .nav:hover,
+body.light .nav.active{background:#d5d8d5!important;color:#171a1d!important}
+body.light .eyebrow,
+body.light .navlabel,
+body.light th{color:#555d64!important}
+
+/* Softer paper: still receipt-like, without a bright-white glare */
+.receipt,
+.receipt::before,
+.receipt::after{background:#e8e8e4!important}
+.receipt::before,
+.receipt::after{height:6px}
+body:not(.light) .receipt{
+  background:#e8e8e4!important;
+  color:#101113!important;
+  filter:drop-shadow(0 0 3px rgba(235,242,255,.10))
+         drop-shadow(0 14px 24px rgba(0,0,0,.62))!important;
+}
+body:not(.light) .receipt::before,
+body:not(.light) .receipt::after{background:#e8e8e4!important}
+body:not(.light) .receipt .rh,
+body:not(.light) .receipt .v{color:#101113}
+body:not(.light) .receipt .rc,
+body:not(.light) .receipt .k,
+body:not(.light) .receipt .rf{color:#3e4246}
+
+
+/* Receipt clarity pass: matte paper, crisp type, no glow */
+.receipt,
+.receipt::before,
+.receipt::after{
+  background:#d9d9d4!important;
+}
+.receipt{
+  color:#0b0c0d!important;
+  filter:none!important;
+  box-shadow:0 12px 24px rgba(0,0,0,.38)!important;
+  -webkit-font-smoothing:auto!important;
+  text-rendering:geometricPrecision;
+}
+.receipt .rh,
+.receipt .v{
+  color:#0b0c0d!important;
+}
+.receipt .rc,
+.receipt .k,
+.receipt .rf{
+  color:#303337!important;
+}
+.receipt.tilt:hover{
+  filter:none!important;
+  box-shadow:0 14px 28px rgba(0,0,0,.44)!important;
+}
+
+
+/* Final matte receipt: low glare, crisp print */
+.receipt,
+.receipt::before,
+.receipt::after{
+  background:#c6c7c3!important;
+}
+.receipt{
+  color:#080909!important;
+  filter:none!important;
+  box-shadow:none!important;
+  -webkit-font-smoothing:antialiased!important;
+  text-rendering:optimizeLegibility!important;
+}
+.receipt .rh,
+.receipt .v{
+  color:#080909!important;
+}
+.receipt .rc,
+.receipt .k,
+.receipt .rf{
+  color:#272a2c!important;
+}
+.receipt.tilt,
+.receipt.tilt:hover{
+  filter:none!important;
+  box-shadow:none!important;
+}
+
+
+/* Light mode receipt: restore softer light paper */
+body.light .receipt,
+body.light .receipt::before,
+body.light .receipt::after{
+  background:#e8e8e4!important;
+}
+body.light .receipt{
+  color:#101113!important;
+}
+body.light .receipt .rh,
+body.light .receipt .v{
+  color:#101113!important;
+}
+body.light .receipt .rc,
+body.light .receipt .k,
+body.light .receipt .rf{
+  color:#3e4246!important;
+}
+
+
+/* Light receipt depth: subtle physical-paper shadow, no glow */
+body.light .receipt{
+  filter:none!important;
+  box-shadow:0 10px 22px rgba(20,22,24,.18)!important;
+}
+body.light .receipt.tilt:hover{
+  filter:none!important;
+  box-shadow:0 13px 26px rgba(20,22,24,.22)!important;
+}
+
+
+/* Light receipt depth refinement */
+body.light .receipt{
+  box-shadow:0 12px 26px rgba(20,22,24,.24)!important;
+}
+body.light .receipt.tilt:hover{
+  box-shadow:0 15px 30px rgba(20,22,24,.28)!important;
+}
+
+
+/* Final form focus refinement: thin, calm, accessible */
+.field input,
+.field select,
+.field textarea{
+  outline:none!important;
+  box-shadow:none!important;
+}
+.field input:focus,
+.field select:focus,
+.field textarea:focus,
+.field input:focus-visible,
+.field select:focus-visible,
+.field textarea:focus-visible{
+  outline:none!important;
+  border-color:#68727d!important;
+  box-shadow:0 0 0 1px rgba(145,169,196,.28)!important;
+}
+body.light .field input:focus,
+body.light .field select:focus,
+body.light .field textarea:focus,
+body.light .field input:focus-visible,
+body.light .field select:focus-visible,
+body.light .field textarea:focus-visible{
+  outline:none!important;
+  border-color:#858d87!important;
+  box-shadow:0 0 0 1px rgba(70,78,72,.16)!important;
+}
+
+
+/* Light mode text refinement: slightly darker for clearer reading */
+body.light{
+  --text:#171a1c;
+  --muted:#50565a;
+  color:#171a1c;
+}
+body.light .field label,
+body.light .detail strong,
+body.light h1,
+body.light h2,
+body.light h3{
+  color:#171a1c!important;
+}
+body.light .muted,
+body.light .sub,
+body.light .help,
+body.light .detail span,
+body.light .stat .label{
+  color:#50565a!important;
+}
+body.light .nav{
+  color:#3c4246!important;
+}
+
+
+/* Status refinement: slightly brighter, clearer state indicators */
+body:not(.light) .pill.paid,
+body:not(.light) .pill.ok{
+  color:#86d6ad!important;
+  background:#153326!important;
+  border-color:#36775a!important;
+}
+body:not(.light) .pill.pending{
+  color:#e2bd78!important;
+  background:#352918!important;
+  border-color:#80623a!important;
+}
+body:not(.light) .pill.failed,
+body:not(.light) .pill.error{
+  color:#e29aa9!important;
+  background:#371e27!important;
+  border-color:#804453!important;
+}
+body:not(.light) .pill.neutral{
+  color:#c5cad1!important;
+  background:#292b2f!important;
+  border-color:#50545b!important;
+}
+
+body.light .pill.paid,
+body.light .pill.ok{
+  color:#245d42!important;
+  background:#dcebe2!important;
+  border-color:#91b8a0!important;
+}
+body.light .pill.pending{
+  color:#76551f!important;
+  background:#eee4ce!important;
+  border-color:#c4a66d!important;
+}
+body.light .pill.failed,
+body.light .pill.error{
+  color:#7b3947!important;
+  background:#eedde1!important;
+  border-color:#c69ba5!important;
+}
+body.light .pill.neutral{
+  color:#44494d!important;
+  background:#dedfdd!important;
+  border-color:#adb1ad!important;
+}
+
+
+/* Dark clarity pass: crisp text, cleaner separation, zero glow */
+body:not(.light){
+  --text:#f1f2f3;
+  --muted:#aeb4bb;
+  color:#f1f2f3;
+  -webkit-font-smoothing:antialiased;
+  text-rendering:optimizeLegibility;
+}
+
+body:not(.light) h1,
+body:not(.light) h2,
+body:not(.light) h3,
+body:not(.light) .field label,
+body:not(.light) .detail strong{
+  color:#f4f5f6!important;
+}
+
+body:not(.light) .muted,
+body:not(.light) .sub,
+body:not(.light) .help,
+body:not(.light) .detail span,
+body:not(.light) .stat .label{
+  color:#aeb4bb!important;
+}
+
+body:not(.light) .nav{
+  color:#c1c6cc!important;
+}
+body:not(.light) .nav:hover,
+body:not(.light) .nav.active{
+  color:#f5f6f7!important;
+}
+
+body:not(.light) .card,
+body:not(.light) .stat,
+body:not(.light) .hero{
+  border-color:#34383d!important;
+}
+
+body:not(.light) .field input,
+body:not(.light) .field select,
+body:not(.light) .field textarea,
+body:not(.light) .address{
+  color:#f0f1f2!important;
+  border-color:#41464c!important;
+}
+
+/* Preserve the approved matte receipt */
+body:not(.light) .receipt{
+  color:#080909!important;
+  filter:none!important;
+  box-shadow:none!important;
+}
+
 </style>
 </head>
 <body>

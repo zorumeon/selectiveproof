@@ -132,7 +132,6 @@ Scanning uses `https://testnet.zec.rocks:443` (override with `LIGHTWALLETD`). A 
 
 ## License
 
-TODO
 
 ## Payment finality (current build)
 
