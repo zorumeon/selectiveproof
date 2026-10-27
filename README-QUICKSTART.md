@@ -34,4 +34,4 @@ Requirements: Node.js 18 or newer.
 - Do not use Mainnet funds until the complete flow has been reviewed and tested.
 
 
-Before starting for the first time, run `npm install` from this folder to install the Zcash scanner dependency. The payment QR renderer loads from a CDN and requires browser internet access. QR payload includes network, address, amount, and invoice memo code as text; it does not guarantee every wallet can import the memo automatically.
+Before starting for the first time, run `npm install` from this folder to install the required dependencies. Payment QR codes are generated locally by the server with no third-party QR service. For real invoices, the QR uses a ZIP-321 payment URI containing the receiving address, amount, and invoice memo. Confirm the details in a ZIP-321 compatible Zcash wallet before sending.
