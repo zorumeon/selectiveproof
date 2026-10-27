@@ -7,7 +7,7 @@ The public demo runs on **Zcash testnet** (TAZ). No real funds are involved.
 Invoices, receipts and the selective proof tool also support **Zcash mainnet** (ZEC), but only when you run the app on your own computer (see "Mainnet" below).
 
 - Live demo: https://selectiveproof.zorumeon.deno.net/
-- Demo video (2 minutes): TODO_VIDEO_LINK
+- Demo video (2 minutes): https://youtu.be/Y4yP1q1o3cU
 
 
 ## Requirements
