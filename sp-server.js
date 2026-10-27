@@ -22,6 +22,8 @@ const https = require('node:https');
 const fs = require('node:fs');
 const path = require('node:path');
 const crypto = require('node:crypto');
+const QRCode = require('qrcode');
+const { paymentUri } = require('./sp-zip321');
 const { toZats, memoHasInvoiceCode, evaluateInvoicePayment } = require('./sp-payment');
 
 // ---------------------------------------------------------------------------
@@ -809,6 +811,27 @@ const server = http.createServer(async (req, res) => {
       if (req.method !== 'POST') return sendJson(res, 405, { error: 'Use POST.' });
       return await handleCreateReceipt(req, res, rcMatch[1]);
     }
+    const qrMatch = new RegExp(`^/api/invoices/${ID_RE}/payment-qr$`).exec(pathname);
+    if (qrMatch) {
+      if (req.method !== 'GET') return sendJson(res, 405, { error: 'Use GET.' });
+      limit(req, 'payment-qr', 120, 60 * 1000);
+
+      const inv = invoices.find((i) => i.id === qrMatch[1]);
+      if (!inv) return sendJson(res, 404, { error: 'Invoice not found.' });
+
+      const uri = paymentUri(inv);
+      const dataUrl = await QRCode.toDataURL(uri, {
+        errorCorrectionLevel: 'M',
+        margin: 2,
+        width: 320,
+      });
+
+      return sendJson(res, 200, {
+        qr: dataUrl,
+        uri,
+      });
+    }
+
     const invMatch = new RegExp(`^/api/invoices/${ID_RE}$`).exec(pathname);
     if (invMatch && req.method === 'GET') {
       limit(req, 'invoice', 240, 60 * 1000);

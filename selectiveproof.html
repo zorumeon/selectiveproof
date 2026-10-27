@@ -923,7 +923,12 @@ body:not(.light) .receipt{
 </section>
 
 <section class="page" id="page-payment">
-  <div class="grid two"><div class="card"><div class="eyebrow">PAYMENT REQUEST</div><h2 style="margin-top:7px">Pay this invoice</h2><p class="muted">Use a compatible Zcash wallet on the same network. The address and amount below are loaded from the backend invoice.</p><div id="paymentStatus" class="pill neutral">Select an invoice</div><div class="stat" style="margin:15px 0"><div class="label">Amount due</div><div class="value" id="payAmount">—</div><div class="hint" id="payNetwork">Network not selected</div></div><div class="field"><label>Receiving address</label><div class="address" id="payAddress">Choose an invoice from the Invoices page.</div><button class="btn" id="copyAddress" style="margin-top:8px" disabled>Copy receiving address</button></div><div class="field" style="margin-top:15px"><label>Invoice / memo code</label><div class="address" id="payCode">—</div><button class="btn" id="copyDetails" style="margin-top:8px" disabled>Copy payment details</button></div><p class="help" style="margin-top:15px">A QR code is not shown unless a compatible encoding is available. Do not treat an illustrative QR as a payment request.</p></div>
+  <div class="grid two"><div class="card"><div class="eyebrow">PAYMENT REQUEST</div><h2 style="margin-top:7px">Pay this invoice</h2><p class="muted">Use a compatible Zcash wallet on the same network. The address and amount below are loaded from the backend invoice.</p><div id="paymentStatus" class="pill neutral">Select an invoice</div><div class="stat" style="margin:15px 0"><div class="label">Amount due</div><div class="value" id="payAmount">—</div><div class="hint" id="payNetwork">Network not selected</div></div><div class="field"><label>Receiving address</label><div class="address" id="payAddress">Choose an invoice from the Invoices page.</div><button class="btn" id="copyAddress" style="margin-top:8px" disabled>Copy receiving address</button></div><div class="field" style="margin-top:15px"><label>Invoice / memo code</label><div class="address" id="payCode">—</div><button class="btn" id="copyDetails" style="margin-top:8px" disabled>Copy payment details</button></div><div id="payQrBox" style="margin-top:18px;text-align:center">
+  <div class="eyebrow" style="margin-bottom:10px">ZIP-321 PAYMENT QR</div>
+  <img id="payQr" alt="Zcash payment QR code" width="240" height="240" hidden style="max-width:100%;height:auto;margin:0 auto;border-radius:8px">
+  <div id="payQrNote" class="help">Select a real invoice to generate its payment QR.</div>
+</div>
+<p class="help" style="margin-top:12px">For real invoices, the QR encodes the receiving address, amount and invoice memo using ZIP-321. Confirm the details in your compatible Zcash wallet before sending.</p></div>
   <div class="card"><div class="eyebrow">SELECTIVE RECEIPT</div><h2 style="margin-top:6px">Share only what you choose</h2>
     <div class="rcwrap"><div id="payReceipt"></div><div>
       <p class="muted" style="margin-top:0">Pick the fields to show. Anything unchecked turns into a black bar and is left out of the copied text. The amount always stays visible.</p>
@@ -1015,7 +1020,35 @@ async function loadInvoices(){const d=await api("/api/invoices");invoices=Array.
 const EXPLORER={testnet:"https://testnet.zcashexplorer.app/transactions/",mainnet:"https://mainnet.zcashexplorer.app/transactions/"};
 function explorerUrl(net,txid){const t=String(txid||"").trim();return /^[0-9a-fA-F]{64}$/.test(t)?(EXPLORER[net==="mainnet"?"mainnet":"testnet"]+t.toLowerCase()):""}
 function setExplorerLink(a,note,inv){if(!a)return;const u=(!demo&&inv)?explorerUrl(inv.net,inv.txid):"";a.hidden=!u;if(u){a.href=u;a.setAttribute("aria-label","Open transaction "+inv.txid.slice(0,8)+" in the "+(inv.net==="mainnet"?"mainnet":"testnet")+" block explorer (opens a new tab)")}else a.removeAttribute("href");if(note){const msg=!inv||!inv.txid?"":(demo?"Demo transaction ID: it does not exist on chain.":(u?"":"This transaction ID looks malformed, so no link is shown."));note.hidden=!msg;note.textContent=msg}}
-function renderPayment(inv){if(!inv)return;selectedInvoice=inv;$("#paymentStatus").outerHTML;$("#paymentStatus").className="pill "+statusClass(inv.status);$("#paymentStatus").textContent=inv.status||"unknown";$("#payAmount").textContent=fmt(inv.amount)+" "+unit(inv.net);$("#payNetwork").textContent=inv.net==="mainnet"?"Zcash Mainnet":"Zcash Testnet";$("#payAddress").textContent=inv.address||"No receiving address returned by server";$("#payCode").textContent=inv.code||"—";$("#payDesc").textContent=inv.description||"—";$("#payId").textContent=inv.id||"—";$("#payStatusText").textContent=inv.status||"unknown";$("#payReceived").textContent=fmt(inv.received)+" "+unit(inv.net);$("#payTxid").textContent=inv.txid||"—";setExplorerLink($("#payTxidLink"),$("#payTxidNote"),inv);$("#payHeight").textContent=inv.paidHeight??"—";$("#payNetPill").textContent=inv.net==="mainnet"?"MAINNET":"TESTNET";$("#copyAddress").disabled=!inv.address;$("#copyDetails").disabled=!inv.address;$("#checkPayment").disabled=!inv.id;$("#paymentResult").textContent="";drawPayReceipt()}
+async function loadPaymentQr(inv){
+  const img=$("#payQr"),note=$("#payQrNote");
+  img.hidden=true;
+  img.removeAttribute("src");
+
+  if(demo){
+    note.textContent="Demo only — payment QR unavailable for sample data.";
+    return;
+  }
+  if(!inv?.id||!inv.address||!inv.code){
+    note.textContent="Payment QR unavailable for this invoice.";
+    return;
+  }
+
+  note.textContent="Generating ZIP-321 payment QR…";
+  try{
+    const d=await api("/api/invoices/"+encodeURIComponent(inv.id)+"/payment-qr");
+    if(selectedInvoice?.id!==inv.id)return;
+    if(typeof d.qr!=="string"||!d.qr.startsWith("data:image/png;base64,"))throw new Error("Invalid QR response");
+    img.src=d.qr;
+    img.hidden=false;
+    note.textContent="Scan with a ZIP-321 compatible Zcash wallet.";
+  }catch(e){
+    if(selectedInvoice?.id!==inv.id)return;
+    note.textContent="Payment QR unavailable: "+e.message;
+  }
+}
+
+function renderPayment(inv){if(!inv)return;selectedInvoice=inv;$("#paymentStatus").outerHTML;$("#paymentStatus").className="pill "+statusClass(inv.status);$("#paymentStatus").textContent=inv.status||"unknown";$("#payAmount").textContent=fmt(inv.amount)+" "+unit(inv.net);$("#payNetwork").textContent=inv.net==="mainnet"?"Zcash Mainnet":"Zcash Testnet";$("#payAddress").textContent=inv.address||"No receiving address returned by server";$("#payCode").textContent=inv.code||"—";$("#payDesc").textContent=inv.description||"—";$("#payId").textContent=inv.id||"—";$("#payStatusText").textContent=inv.status||"unknown";$("#payReceived").textContent=fmt(inv.received)+" "+unit(inv.net);$("#payTxid").textContent=inv.txid||"—";setExplorerLink($("#payTxidLink"),$("#payTxidNote"),inv);$("#payHeight").textContent=inv.paidHeight??"—";$("#payNetPill").textContent=inv.net==="mainnet"?"MAINNET":"TESTNET";$("#copyAddress").disabled=!inv.address;$("#copyDetails").disabled=!inv.address;$("#checkPayment").disabled=!inv.id;$("#paymentResult").textContent="";drawPayReceipt();loadPaymentQr(inv)}
 async function refreshAll(){try{const h=await api("/api/health");health=h;$("#healthStatus").textContent=h.ok?"Connected":"Unavailable";$("#healthStatus").style.color=h.ok?"var(--green)":"var(--red)";$("#healthDetail").textContent="Mode: "+(h.mode||"local")+" · "+((h.networks||[]).join(", ")||"networks unknown");await loadInvoices();await loadSessionStatus()}catch(e){if(!demo&&!/[?&]live/.test(location.search)){enterDemo(true);return}$("#healthStatus").textContent="API unavailable";$("#healthStatus").style.color="var(--red)";$("#healthDetail").textContent="Start the local backend, or remove ?live to use the demo. "+e.message;toast("Backend unavailable. Start the local server or open the demo version.")}}
 $("#amount").addEventListener("input",()=>$("#previewAmount").textContent=(Number($("#amount").value||0).toLocaleString("en-US",{maximumFractionDigits:8})+" "+unit($("#invoiceNet").value)));
 $("#description").addEventListener("input",()=>$("#previewDesc").textContent=$("#description").value||"No description");

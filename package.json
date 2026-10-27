@@ -12,7 +12,8 @@
     "test": "node --test"
   },
   "dependencies": {
-    "@ledgerhq/zcash-utils": "^2.8.0"
+    "@ledgerhq/zcash-utils": "^2.8.0",
+    "qrcode": "^1.5.4"
   },
   "engines": {
     "node": ">=18"
