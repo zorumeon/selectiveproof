@@ -542,7 +542,13 @@ body.light tbody tr:hover{background:#f0f0f4}
 body.light .notice{background:#f0f0f4;border-color:#d7d7df;color:#33333b}
 body.light .footer,body.light .sidefoot{color:#777781}
 body.light .pill.neutral{color:#45454e;background:#f0f0f4;border-color:#d7d7df}
-@media(max-width:900px){.nav{border-radius:2px}}
+@media(max-width:900px){
+  .nav{border-radius:2px}
+  .sidebar{display:block}
+  .sidebar .brand{display:block;margin:0 0 10px;padding:0}
+  .sidebar nav{display:flex;gap:6px;overflow-x:auto;padding-bottom:2px}
+  .sidebar .nav{flex:0 0 auto;width:auto}
+}
 
 
 /* Elegant muted charcoal background refinement */
