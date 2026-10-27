@@ -100,7 +100,7 @@ body{background:var(--bg)!important;color:var(--fg)!important;font-family:Inter,
 body{background:var(--bg)!important;color:var(--fg)!important;font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif!important;line-height:1.55!important}h1{letter-spacing:-.035em!important;font-weight:750!important}h2,h3{font-weight:700!important;letter-spacing:-.015em}a{color:#1769e8}button,.btn,button.b{border-radius:11px!important;transition:transform .12s ease,box-shadow .12s ease,background .12s ease!important}button:focus-visible,a:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-visible{outline:3px solid #80b4ff!important;outline-offset:2px!important}input,textarea,select{border:1px solid var(--bd)!important;border-radius:10px!important;background:var(--inp)!important;color:var(--fg)!important;min-height:42px}label{font-weight:650!important;color:var(--fg)!important;font-size:13px!important}.card,.paper,.panel,.box{background:var(--card)!important;border:1px solid var(--line)!important;border-radius:16px!important;box-shadow:0 8px 28px rgba(20,50,90,.045)!important}.wrap{max-width:960px!important}.btn,button.b{background:#1769e8!important;color:#fff!important;border:1px solid #1769e8!important;box-shadow:none!important;font-weight:700!important}.btn.ghost,button.g{background:transparent!important;color:var(--fg)!important;border:1px solid var(--bd)!important}.sub,.muted,.hint{color:var(--mut)!important}.badge,.tag{border-radius:999px!important;padding:4px 10px!important;font-weight:700!important}.row{gap:12px}.hidden{display:none!important}table{width:100%;border-collapse:separate;border-spacing:0}th{background:color-mix(in srgb,var(--bg) 80%,var(--card));font-size:12px;text-transform:none;letter-spacing:0;color:var(--mut)}td,th{padding:11px 12px;border-bottom:1px solid var(--line)}tr:last-child td{border-bottom:0}.netb{border-radius:999px!important}::selection{background:#cfe2ff;color:#14243d}
 @media(max-width:640px){.wrap{padding:12px!important}.card{padding:18px!important}.row{flex-wrap:wrap}.row>*{min-width:100%}h1{font-size:clamp(22px,6vw,32px)!important}button,.btn{min-height:44px}.cols{grid-template-columns:1fr!important}.acts{display:flex;flex-wrap:wrap;gap:8px}}
 </style>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js" referrerpolicy="no-referrer"></script>
+
 </head>
 <body>
 <header class="sp-top no-print"><a href="/" title="SelectiveProof" aria-label="SelectiveProof, back to start page"><svg class="sp-logo" viewBox="0 0 34 34" width="34" height="34" role="img" aria-label="SelectiveProof logo"><polygon points="5,5 7,3 9,5 11,3 13,5 15,3 17,5 19,3 21,5 23,3 25,5 27,3 29,5 29,29 27,31 25,29 23,31 21,29 19,31 17,29 15,31 13,29 11,31 9,29 7,31 5,29" fill="#f6f1e4" stroke="#14120d" stroke-opacity=".35"/><rect x="9" y="9" width="16" height="1.6" rx=".8" fill="#14120d" fill-opacity=".55"/><rect x="9" y="13" width="11" height="1.6" rx=".8" fill="#14120d" fill-opacity=".55"/><rect x="9" y="17.5" width="16" height="4.5" rx=".6" fill="#14120d"/><rect x="9" y="25" width="7" height="1.8" rx=".9" fill="#22c55e"/></svg><span>SelectiveProof</span></a><span class="sp-net" id="netBadge">TESTNET</span><button type="button" class="btn ghost sp-thm" aria-label="Switch theme"></button></header>
@@ -123,8 +123,8 @@ body{background:var(--bg)!important;color:var(--fg)!important;font-family:Inter,
         <div class="line"><input id="code" readonly class="in mono" aria-label="Invoice memo code"><button id="copyCode" type="button" class="btn ghost">Copy</button></div>
         <div class="qr-panel" style="margin-top:16px;padding:16px;border:1px solid var(--line);border-radius:14px;text-align:center">
           <p class="lbl" style="margin-top:0">3. Scan payment details</p>
-          <div id="paymentQr" role="img" aria-label="QR code containing the payment address and invoice memo code" style="display:inline-flex;min-width:220px;min-height:220px;align-items:center;justify-content:center;background:#fff;padding:10px;border-radius:8px"></div>
-          <p id="qrCaption" class="hint">QR contains the address and invoice memo code. Confirm your wallet supports the memo field before sending.</p>
+          <img id="paymentQr" alt="Zcash payment QR code" width="220" height="220" hidden style="max-width:100%;height:auto;margin:0 auto;background:#fff;padding:10px;border-radius:8px">
+          <p id="qrCaption" class="hint">Scan with a ZIP-321 compatible Zcash wallet and confirm the payment details before sending.</p>
           <p id="qrError" class="msg bad hidden" role="status"></p>
         </div>
         <p class="hint">Include this exact code in the payment memo so the server can match the payment to this invoice. Verify the network and amount in your wallet before sending.</p>
@@ -252,23 +252,33 @@ body{background:var(--bg)!important;color:var(--fg)!important;font-family:Inter,
   }
   function copy(inputId, btnId) { var el = $(inputId); el.select(); copyText(el.value, $(btnId), 'Copy'); }
   function renderPaymentQr(inv) {
-    var mount = $('paymentQr');
+    var img = $('paymentQr');
     var err = $('qrError');
-    if (!mount) return;
-    mount.textContent = '';
+    if (!img) return;
+    img.hidden = true;
+    img.removeAttribute('src');
     err.classList.add('hidden');
-    // Encode an explicit text payload rather than pretending every wallet supports
-    // a standardized Zcash URI with memo parameters.
-    var payload = 'Zcash payment\nNetwork: ' + (inv.net === 'mainnet' ? 'MAINNET' : 'TESTNET') +
-      '\nAddress: ' + String(inv.address || '') + '\nAmount: ' + String(inv.amount || '') + ' ' +
-      (inv.unit || (inv.net === 'mainnet' ? 'ZEC' : 'TAZ')) + '\nMemo: ' + String(inv.code || '');
-    if (typeof window.QRCode !== 'function') {
-      err.textContent = 'QR generator could not load. Check your internet connection and reload this page.';
-      err.classList.remove('hidden');
-      return;
-    }
-    try { new window.QRCode(mount, { text: payload, width: 220, height: 220, colorDark: '#111827', colorLight: '#ffffff', correctLevel: window.QRCode.CorrectLevel.M }); }
-    catch (e) { err.textContent = 'Could not create the QR code. Use the copy buttons instead.'; err.classList.remove('hidden'); }
+
+    fetch('/api/invoices/' + encodeURIComponent(inv.id) + '/payment-qr', {
+      headers: { 'Accept': 'application/json' }
+    })
+      .then(function (r) {
+        if (!r.ok) throw new Error('HTTP ' + r.status);
+        return r.json();
+      })
+      .then(function (d) {
+        if (!d || typeof d.qr !== 'string' || d.qr.indexOf('data:image/png;base64,') !== 0) {
+          throw new Error('Invalid QR response');
+        }
+        if (!lastInv || lastInv.id !== inv.id) return;
+        img.src = d.qr;
+        img.hidden = false;
+      })
+      .catch(function () {
+        if (!lastInv || lastInv.id !== inv.id) return;
+        err.textContent = 'Payment QR unavailable. Use the address and memo code above instead.';
+        err.classList.remove('hidden');
+      });
   }
   $('copyAddr').addEventListener('click', function () { copy('addr', 'copyAddr'); });
   $('copyCode').addEventListener('click', function () { copy('code', 'copyCode'); });

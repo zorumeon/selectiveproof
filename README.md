@@ -6,7 +6,7 @@ Prove that a shielded Zcash payment exists, without exposing your wallet history
 The public demo runs on **Zcash testnet** (TAZ). No real funds are involved.
 Invoices, receipts and the selective proof tool also support **Zcash mainnet** (ZEC), but only when you run the app on your own computer (see "Mainnet" below).
 
-- Live demo: TODO_PUBLIC_URL
+- Live demo: https://selectiveproof.zorumeon.deno.net/
 - Demo video (2 minutes): TODO_VIDEO_LINK
 
 
@@ -99,7 +99,7 @@ In public mode, visitors can open only `/` (the start page, `selectiveproof.html
 ## Receipt signing key
 
 - Algorithm: Ed25519
-- Fingerprint (first 16 hex characters of the SHA-256 of the public key): `TODO_FINGERPRINT`
+- Fingerprint: query `GET /api/merchant-key` on the deployment you are verifying and compare it through an independent trusted channel.
 - Public key: `GET /api/merchant-key`. Anyone can check a signature without contacting the server.
 
 Replacing or deleting the key invalidates every receipt issued so far.
